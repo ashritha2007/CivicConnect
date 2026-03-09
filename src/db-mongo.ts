@@ -8,9 +8,20 @@ if (!MONGODB_URI || MONGODB_URI === 'mongodb+srv://harshithsai597_db_user:<db_pa
     throw new Error('Please define the MONGODB_URI environment variable inside .env and replace <db_password> with the actual password.');
 }
 
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('Successfully connected to MongoDB!'))
-    .catch(err => console.error('MongoDB connection error:', err));
+let isConnected = false;
+export const connectDB = async () => {
+    if (isConnected) return;
+    if (!MONGODB_URI) throw new Error('MONGODB_URI is not defined');
+
+    try {
+        await mongoose.connect(MONGODB_URI);
+        isConnected = true;
+        console.log('Successfully connected to MongoDB!');
+    } catch (err) {
+        console.error('MongoDB connection error:', err);
+        throw err;
+    }
+};
 
 export const UserSchema = new Schema({
     email: { type: String, required: true, unique: true },

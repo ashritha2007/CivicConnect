@@ -4,8 +4,8 @@
     "outputDirectory": "dist",
     "rewrites": [
         {
-            "source": "/api/:path*",
-            "destination": "/api/index"
+            "source": "/api/(.*)",
+            "destination": "/api/index.ts"
         },
         {
             "source": "/(.*)",
@@ -14,7 +14,8 @@
     ],
     "functions": {
         "api/index.ts": {
-            "maxDuration": 30
+            "maxDuration": 25,
+            "memory": 1024
         }
     }
 }
