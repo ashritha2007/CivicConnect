@@ -11,7 +11,8 @@ interface Issue {
   status: string;
   votes: number;
   photo_url: string;
-  created_at: string;
+  created_at?: string;
+  createdAt?: string;
   locality: string;
   is_high_priority: boolean;
 }
@@ -90,7 +91,7 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, onSelect, onVote 
           <span className="flex items-center gap-1.5">
             <MapPin className={`w-3.5 h-3.5 ${isAdmin ? 'text-red-500' : 'text-yellow-500'}`} /> {issue.locality}
           </span>
-          <span>{formatDistanceToNow(new Date(issue.created_at))} ago</span>
+          <span>{formatDistanceToNow(new Date(issue.createdAt || issue.created_at))} ago</span>
         </div>
 
         <div className="pt-5 flex items-center justify-between border-t border-white/5">

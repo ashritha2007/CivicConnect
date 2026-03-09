@@ -6,3 +6,9 @@ coverage/
 *.log
 .env*
 !.env.example
+civic_connect.db
+uploads/
+*.ts.map
+test-mongo.ts
+migrate-db.ts
+error.log

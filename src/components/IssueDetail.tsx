@@ -108,7 +108,7 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                 <MapPin className={`w-4 h-4 ${accentText2}`} /> {issue.locality}, {issue.district}
               </span>
               <span className="flex items-center gap-1.5">
-                <Calendar className={`w-4 h-4 ${accentText2}`} /> {format(new Date(issue.created_at), 'PPP')}
+                <Calendar className={`w-4 h-4 ${accentText2}`} /> {format(new Date(issue.createdAt || issue.created_at), 'PPP')}
               </span>
               {issue.assigned_corporation && (
                 <span className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">
@@ -209,7 +209,7 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                           }`}
                       />
                       <p className="text-sm font-bold text-white uppercase tracking-tight">{item.status.replace('_', ' ')}</p>
-                      <p className="text-[10px] text-slate-500 font-medium">{format(new Date(item.created_at), 'PPP p')}</p>
+                      <p className="text-[10px] text-slate-500 font-medium">{format(new Date(item.createdAt || item.created_at), 'PPP p')}</p>
                       {item.note && (
                         <p className="text-sm text-slate-400 mt-2 bg-white/5 p-3 rounded-xl border border-white/5 italic">"{item.note}"</p>
                       )}
@@ -238,7 +238,7 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                         <span className={`text-[10px] font-bold uppercase tracking-widest ${c.user_role === 'admin' ? (isAdmin ? 'text-red-400' : 'text-yellow-500') : 'text-yellow-500'}`}>
                           {c.user_role}
                         </span>
-                        <span className="text-[10px] text-slate-600 font-mono">{format(new Date(c.created_at), 'p')}</span>
+                        <span className="text-[10px] text-slate-600 font-mono">{format(new Date(c.createdAt || c.created_at), 'p')}</span>
                       </div>
                       <p className="text-slate-300 leading-relaxed">{c.text}</p>
                     </div>

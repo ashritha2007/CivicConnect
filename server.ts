@@ -1,6 +1,7 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
-import db from "./src/db.js";
+import mongoose from "mongoose";
+import { User, Issue, Vote, Comment, Timeline } from "./src/db-mongo.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import multer from "multer";
@@ -38,25 +39,25 @@ async function startServer() {
   const seedUsers = async () => {
     // Admin
     const adminEmail = "admin@civicconnect.com";
-    const existingAdmin = db.prepare("SELECT * FROM users WHERE email = ?").get(adminEmail);
+    const existingAdmin = await User.findOne({ email: adminEmail });
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash("admin123", 10);
-      db.prepare("INSERT INTO users (email, password, role) VALUES (?, ?, 'admin')").run(adminEmail, hashedPassword);
+      await User.create({ email: adminEmail, password: hashedPassword, role: 'admin' });
       console.log("Admin user seeded: admin@civicconnect.com / admin123");
     }
 
     // Demo Citizen
     const userEmail = "citizen@civicconnect.com";
-    const existingUser = db.prepare("SELECT * FROM users WHERE email = ?").get(userEmail);
+    const existingUser = await User.findOne({ email: userEmail });
     if (!existingUser) {
       const hashedPassword = await bcrypt.hash("user123", 10);
-      db.prepare("INSERT INTO users (email, password, role) VALUES (?, ?, 'user')").run(userEmail, hashedPassword);
+      await User.create({ email: userEmail, password: hashedPassword, role: 'user' });
       console.log("User seeded: citizen@civicconnect.com / user123");
     }
   };
 
-  const seedIssues = () => {
-    const issueCount = db.prepare("SELECT COUNT(*) as count FROM issues").get().count;
+  const seedIssues = async () => {
+    const issueCount = await Issue.countDocuments();
     if (issueCount === 0) {
       const issues = [
         {
@@ -126,90 +127,71 @@ async function startServer() {
         }
       ];
 
-      const insertIssue = db.prepare(`
-        INSERT INTO issues (title, description, category, state, district, locality, latitude, longitude, status, votes, is_high_priority, assigned_corporation)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `);
+      for (const issueData of issues) {
+        const newIssue = await Issue.create({
+          title: issueData.title,
+          description: issueData.description,
+          category: issueData.category,
+          state: issueData.state,
+          district: issueData.district,
+          locality: issueData.locality,
+          latitude: issueData.latitude,
+          longitude: issueData.longitude,
+          status: issueData.status,
+          votes: issueData.votes,
+          is_high_priority: issueData.is_high_priority,
+          assigned_corporation: issueData.status !== 'not_started' ? 'GVMC' : null
+        });
 
-      const insertTimeline = db.prepare(`
-        INSERT INTO timeline (issue_id, status, note)
-        VALUES (?, ?, ?)
-      `);
-
-      issues.forEach(issue => {
-        const result = insertIssue.run(
-          issue.title,
-          issue.description,
-          issue.category,
-          issue.state,
-          issue.district,
-          issue.locality,
-          issue.latitude,
-          issue.longitude,
-          issue.status,
-          issue.votes,
-          issue.is_high_priority,
-          issue.status !== 'not_started' ? 'GVMC' : null
-        );
-
-        const issueId = result.lastInsertRowid;
+        const issueId = newIssue._id;
 
         // Add initial timeline
-        insertTimeline.run(issueId, 'not_started', 'Issue reported by citizen.');
+        await Timeline.create({ issue_id: issueId, status: 'not_started', note: 'Issue reported by citizen.' });
 
-        if (issue.status === 'in_progress') {
-          insertTimeline.run(issueId, 'in_progress', 'GVMC team has been dispatched for inspection.');
-          db.prepare("INSERT INTO comments (issue_id, text, user_role) VALUES (?, ?, ?)")
-            .run(issueId, "We have noted this issue. A team will be visiting MVP Colony tomorrow morning.", "admin");
-        } else if (issue.status === 'resolved') {
-          insertTimeline.run(issueId, 'in_progress', 'Repair work initiated.');
-          insertTimeline.run(issueId, 'resolved', 'Pipeline repaired and tested. Issue resolved.');
-          db.prepare("INSERT INTO comments (issue_id, text, user_role) VALUES (?, ?, ?)")
-            .run(issueId, "Thank you for reporting. The pipeline has been fixed.", "admin");
-          db.prepare("INSERT INTO comments (issue_id, text, user_role) VALUES (?, ?, ?)")
-            .run(issueId, "Great job! The water wastage has finally stopped.", "user");
+        if (issueData.status === 'in_progress') {
+          await Timeline.create({ issue_id: issueId, status: 'in_progress', note: 'GVMC team has been dispatched for inspection.' });
+          await Comment.create({ issue_id: issueId, text: "We have noted this issue. A team will be visiting MVP Colony tomorrow morning.", user_role: "admin" });
+        } else if (issueData.status === 'resolved') {
+          await Timeline.create({ issue_id: issueId, status: 'in_progress', note: 'Repair work initiated.' });
+          await Timeline.create({ issue_id: issueId, status: 'resolved', note: 'Pipeline repaired and tested. Issue resolved.' });
+          await Comment.create({ issue_id: issueId, text: "Thank you for reporting. The pipeline has been fixed.", user_role: "admin" });
+          await Comment.create({ issue_id: issueId, text: "Great job! The water wastage has finally stopped.", user_role: "user" });
         }
 
-        if (issue.locality === "Beach Road") {
-          db.prepare("INSERT INTO comments (issue_id, text, user_role) VALUES (?, ?, ?)")
-            .run(issueId, "This is really bad. RK Beach is our pride, we should keep it clean.", "user");
+        if (issueData.locality === "Beach Road") {
+          await Comment.create({ issue_id: issueId, text: "This is really bad. RK Beach is our pride, we should keep it clean.", user_role: "user" });
         }
-      });
+      }
       console.log("Demo issues seeded for Vizag city.");
     } else {
       // If issues already exist, ensure some comments are there for demo
-      const commentCount = db.prepare("SELECT COUNT(*) as count FROM comments").get().count;
+      const commentCount = await Comment.countDocuments();
       if (commentCount === 0) {
-        const issues = db.prepare("SELECT id, locality, status FROM issues LIMIT 5").all();
-        issues.forEach((issue: any) => {
+        const issues = await Issue.find().limit(5);
+        for (const issue of issues) {
           if (issue.status === 'in_progress') {
-            db.prepare("INSERT INTO comments (issue_id, text, user_role) VALUES (?, ?, ?)")
-              .run(issue.id, "We have noted this issue. A team will be visiting the site tomorrow morning.", "admin");
+            await Comment.create({ issue_id: issue._id, text: "We have noted this issue. A team will be visiting the site tomorrow morning.", user_role: "admin" });
           } else if (issue.status === 'resolved') {
-            db.prepare("INSERT INTO comments (issue_id, text, user_role) VALUES (?, ?, ?)")
-              .run(issue.id, "Thank you for reporting. The issue has been fixed.", "admin");
-            db.prepare("INSERT INTO comments (issue_id, text, user_role) VALUES (?, ?, ?)")
-              .run(issue.id, "Great job! Finally resolved.", "user");
+            await Comment.create({ issue_id: issue._id, text: "Thank you for reporting. The issue has been fixed.", user_role: "admin" });
+            await Comment.create({ issue_id: issue._id, text: "Great job! Finally resolved.", user_role: "user" });
           }
           if (issue.locality === "Beach Road") {
-            db.prepare("INSERT INTO comments (issue_id, text, user_role) VALUES (?, ?, ?)")
-              .run(issue.id, "This is really bad. We should keep our beaches clean.", "user");
+            await Comment.create({ issue_id: issue._id, text: "This is really bad. We should keep our beaches clean.", user_role: "user" });
           }
-        });
+        }
       }
     }
   };
 
-  seedUsers();
-  seedIssues();
+  await seedUsers();
+  await seedIssues();
 
   app.post("/api/auth/register", async (req, res) => {
     const { email, password, role } = req.body;
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
-      const stmt = db.prepare("INSERT INTO users (email, password, role) VALUES (?, ?, ?)");
-      const result = stmt.run(email, hashedPassword, role || 'user');
-      res.json({ id: result.lastInsertRowid });
+      const newUser = await User.create({ email, password: hashedPassword, role: role || 'user' });
+      res.json({ id: newUser._id });
     } catch (error: any) {
       res.status(400).json({ error: error.message });
     }
@@ -217,60 +199,66 @@ async function startServer() {
 
   app.post("/api/auth/login", async (req, res) => {
     const { email, password } = req.body;
-    const user: any = db.prepare("SELECT * FROM users WHERE email = ?").get(email);
+    const user = await User.findOne({ email });
     if (!user || !(await bcrypt.compare(password, user.password))) {
       return res.status(401).json({ error: "Invalid credentials" });
     }
-    const token = jwt.sign({ id: user.id, role: user.role }, JWT_SECRET);
+    const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET);
     console.log(`User logged in: ${email} (Role: ${user.role})`);
-    res.json({ token, user: { id: user.id, email: user.email, role: user.role } });
+    res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
   });
 
   // --- Issue Routes ---
-  app.get("/api/issues", (req, res) => {
+  app.get("/api/issues", async (req, res) => {
     const { state, district, category, status } = req.query;
-    let query = "SELECT * FROM issues WHERE 1=1";
-    const params = [];
+    const query: any = {};
 
-    if (state) { query += " AND state = ?"; params.push(state); }
-    if (district) { query += " AND district = ?"; params.push(district); }
-    if (category) { query += " AND category = ?"; params.push(category); }
-    if (status) { query += " AND status = ?"; params.push(status); }
+    if (state) query.state = state;
+    if (district) query.district = district;
+    if (category) query.category = category;
+    if (status) query.status = status;
 
-    query += " ORDER BY created_at DESC";
-    const issues = db.prepare(query).all(...params);
-    res.json(issues);
+    const issues = await Issue.find(query).sort({ createdAt: -1 });
+    // Map _id to id and add created_at/updated_at aliases for frontend compatibility
+    const formattedIssues = issues.map(issue => {
+      const obj: any = issue.toObject();
+      obj.id = obj._id;
+      obj.created_at = obj.createdAt;
+      obj.updated_at = obj.updatedAt;
+      return obj;
+    });
+    res.json(formattedIssues);
   });
 
-  app.post("/api/issues", upload.single("photo"), (req, res) => {
+  app.post("/api/issues", upload.single("photo"), async (req, res) => {
     const { title, description, category, state, district, locality, latitude, longitude } = req.body;
     const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
 
-    const stmt = db.prepare(`
-      INSERT INTO issues (title, description, category, state, district, locality, latitude, longitude, photo_url, assigned_corporation)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-    const result = stmt.run(title, description, category, state, district, locality, latitude, longitude, photo_url, null);
+    try {
+      const newIssue = await Issue.create({
+        title, description, category, state, district, locality, latitude, longitude, photo_url, assigned_corporation: null
+      });
 
-    // Add initial timeline entry
-    db.prepare("INSERT INTO timeline (issue_id, status, note) VALUES (?, ?, ?)")
-      .run(result.lastInsertRowid, 'not_started', 'Issue reported by citizen.');
+      // Add initial timeline entry
+      await Timeline.create({ issue_id: newIssue._id, status: 'not_started', note: 'Issue reported by citizen.' });
 
-    res.json({ id: result.lastInsertRowid });
+      res.json({ id: newIssue._id });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
-  app.post("/api/issues/:id/vote", (req, res) => {
+  app.post("/api/issues/:id/vote", async (req, res) => {
     const issueId = req.params.id;
-    const ip = req.ip;
+    const ip = req.ip || 'unknown';
 
     try {
-      db.prepare("INSERT INTO votes (issue_id, ip_address) VALUES (?, ?)").run(issueId, ip);
-      db.prepare("UPDATE issues SET votes = votes + 1 WHERE id = ?").run(issueId);
+      await Vote.create({ issue_id: issueId, ip_address: ip });
+      const updatedIssue = await Issue.findByIdAndUpdate(issueId, { $inc: { votes: 1 } }, { new: true });
 
-      // Check threshold for high priority (e.g., 10 votes)
-      const issue: any = db.prepare("SELECT votes FROM issues WHERE id = ?").get(issueId);
-      if (issue.votes >= 10) {
-        db.prepare("UPDATE issues SET is_high_priority = 1 WHERE id = ?").run(issueId);
+      if (updatedIssue && updatedIssue.votes >= 10) {
+        updatedIssue.is_high_priority = 1;
+        await updatedIssue.save();
       }
 
       res.json({ success: true });
@@ -279,16 +267,16 @@ async function startServer() {
     }
   });
 
-  app.patch("/api/issues/:id/status", (req, res) => {
+  app.patch("/api/issues/:id/status", async (req, res) => {
     try {
       const { status, note } = req.body;
       const issueId = req.params.id;
 
-      const current: any = db.prepare("SELECT status FROM issues WHERE id = ?").get(issueId);
+      const current = await Issue.findById(issueId);
       if (current && current.status !== status) {
-        db.prepare("UPDATE issues SET status = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(status, issueId);
-        db.prepare("INSERT INTO timeline (issue_id, status, note) VALUES (?, ?, ?)")
-          .run(issueId, status, note || `Status updated to ${status}`);
+        current.status = status;
+        await current.save();
+        await Timeline.create({ issue_id: issueId, status, note: note || `Status updated to ${status}` });
       }
 
       res.json({ success: true });
@@ -298,17 +286,17 @@ async function startServer() {
     }
   });
 
-  app.patch("/api/issues/:id/assign", (req, res) => {
+  app.patch("/api/issues/:id/assign", async (req, res) => {
     try {
       const { corporation } = req.body;
       const issueId = req.params.id;
 
-      const current: any = db.prepare("SELECT assigned_corporation, status FROM issues WHERE id = ?").get(issueId);
+      const current = await Issue.findById(issueId);
 
       if (current && current.assigned_corporation !== corporation) {
-        db.prepare("UPDATE issues SET assigned_corporation = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?").run(corporation, issueId);
-        db.prepare("INSERT INTO timeline (issue_id, status, note) VALUES (?, ?, ?)")
-          .run(issueId, current.status, `Issue assigned to ${corporation || 'None'}`);
+        current.assigned_corporation = corporation;
+        await current.save();
+        await Timeline.create({ issue_id: issueId, status: current.status, note: `Issue assigned to ${corporation || 'None'}` });
       }
 
       res.json({ success: true, corporation });
@@ -318,34 +306,71 @@ async function startServer() {
     }
   });
 
+  app.get("/api/issues/:id/details", async (req, res) => {
+    try {
+      const issueId = req.params.id;
+      const issueDoc = await Issue.findById(issueId);
+      if (!issueDoc) return res.status(404).json({ error: 'Issue not found' });
 
-  app.get("/api/issues/:id/details", (req, res) => {
-    const issueId = req.params.id;
-    const issue = db.prepare("SELECT * FROM issues WHERE id = ?").get(issueId);
-    const timeline = db.prepare("SELECT * FROM timeline WHERE issue_id = ? ORDER BY created_at DESC").all(issueId);
-    const comments = db.prepare("SELECT * FROM comments WHERE issue_id = ? ORDER BY created_at ASC").all(issueId);
-    res.json({ issue, timeline, comments });
+      const issue: any = issueDoc.toObject();
+      issue.id = issue._id; // frontend compatibility
+      issue.created_at = issue.createdAt;
+      issue.updated_at = issue.updatedAt;
+
+      const timeline = await Timeline.find({ issue_id: issueId }).sort({ createdAt: -1 });
+      const formattedTimeline = timeline.map((t: any) => {
+        const obj: any = t.toObject();
+        obj.created_at = obj.createdAt;
+        return obj;
+      });
+      const comments = await Comment.find({ issue_id: issueId }).sort({ createdAt: 1 });
+      const formattedComments = comments.map((c: any) => {
+        const obj: any = c.toObject();
+        obj.created_at = obj.createdAt;
+        return obj;
+      });
+
+      res.json({ issue, timeline: formattedTimeline, comments: formattedComments });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
-  app.post("/api/issues/:id/comments", (req, res) => {
+  app.post("/api/issues/:id/comments", async (req, res) => {
     const { text, role } = req.body;
     const issueId = req.params.id;
-    db.prepare("INSERT INTO comments (issue_id, text, user_role) VALUES (?, ?, ?)").run(issueId, text, role || 'user');
+    await Comment.create({ issue_id: issueId, text, user_role: role || 'user' });
     res.json({ success: true });
   });
 
   // --- Analytics ---
-  app.get("/api/analytics", (req, res) => {
-    const stats = {
-      total: db.prepare("SELECT COUNT(*) as count FROM issues").get().count,
-      resolved: db.prepare("SELECT COUNT(*) as count FROM issues WHERE status = 'resolved'").get().count,
-      pending: db.prepare("SELECT COUNT(*) as count FROM issues WHERE status != 'resolved'").get().count,
-      byCategory: db.prepare("SELECT category, COUNT(*) as count FROM issues GROUP BY category").all(),
-      byStatus: db.prepare("SELECT status, COUNT(*) as count FROM issues GROUP BY status").all(),
-      highPriority: db.prepare("SELECT COUNT(*) as count FROM issues WHERE is_high_priority = 1").get().count,
-      byCorporation: db.prepare("SELECT assigned_corporation as name, COUNT(*) as count FROM issues WHERE assigned_corporation IS NOT NULL GROUP BY assigned_corporation").all(),
-    };
-    res.json(stats);
+  app.get("/api/analytics", async (req, res) => {
+    try {
+      const total = await Issue.countDocuments();
+      const resolved = await Issue.countDocuments({ status: 'resolved' });
+      const pending = await Issue.countDocuments({ status: { $ne: 'resolved' } });
+      const highPriority = await Issue.countDocuments({ is_high_priority: 1 });
+
+      const byCategory = await Issue.aggregate([
+        { $group: { _id: "$category", count: { $sum: 1 } } },
+        { $project: { _id: 0, category: "$_id", count: 1 } }
+      ]);
+
+      const byStatus = await Issue.aggregate([
+        { $group: { _id: "$status", count: { $sum: 1 } } },
+        { $project: { _id: 0, status: "$_id", count: 1 } }
+      ]);
+
+      const byCorporation = await Issue.aggregate([
+        { $match: { assigned_corporation: { $ne: null } } },
+        { $group: { _id: "$assigned_corporation", count: { $sum: 1 } } },
+        { $project: { _id: 0, name: "$_id", count: 1 } }
+      ]);
+
+      res.json({ total, resolved, pending, highPriority, byCategory, byStatus, byCorporation });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
   });
 
   // Vite middleware for development
