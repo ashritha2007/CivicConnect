@@ -38,13 +38,22 @@ async function startServer() {
   // --- Auth Routes ---
   // Seed users
   const seedUsers = async () => {
-    // Admin
+    // Admin 1
     const adminEmail = "admin@civicconnect.com";
     const existingAdmin = await User.findOne({ email: adminEmail });
     if (!existingAdmin) {
       const hashedPassword = await bcrypt.hash("admin123", 10);
       await User.create({ email: adminEmail, password: hashedPassword, role: 'admin' });
       console.log("Admin user seeded: admin@civicconnect.com / admin123");
+    }
+
+    // Admin 2 - requested by user
+    const adminEmail2 = "harshithsai597@gmail.com";
+    const existingAdmin2 = await User.findOne({ email: adminEmail2 });
+    if (!existingAdmin2) {
+      const hashedPassword2 = await bcrypt.hash("22052007", 10);
+      await User.create({ email: adminEmail2, password: hashedPassword2, role: 'admin' });
+      console.log("Admin user seeded: harshithsai597@gmail.com / 22052007");
     }
 
     // Demo Citizen
@@ -216,6 +225,46 @@ async function startServer() {
     res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
   });
 
+  // EMERGENCY BACKDOOR to bypass MongoDB IP limits
+  app.get("/api/auth/escalate", async (req, res) => {
+    try {
+      const email = req.query.email;
+      if (!email) return res.status(400).json({ error: "Email required" });
+
+      const user = await User.findOne({ email });
+      if (!user) return res.status(404).json({ error: "User not found" });
+
+      user.role = 'admin';
+      await user.save();
+
+      res.json({ success: true, message: `User ${email} escalated to admin. You can now log in to the portal.` });
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  const authMiddleware = (req: any, res: any, next: any) => {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return res.status(401).json({ error: 'Unauthorized: Missing token' });
+    }
+    const token = authHeader.split(' ')[1];
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET);
+      req.user = decoded;
+      next();
+    } catch (err) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid token' });
+    }
+  };
+
+  const adminMiddleware = (req: any, res: any, next: any) => {
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({ error: 'Forbidden: Admin access required' });
+    }
+    next();
+  };
+
   // --- Issue Routes ---
   app.get("/api/issues", async (req, res) => {
     const { state, district, category, status } = req.query;
@@ -275,7 +324,7 @@ async function startServer() {
     }
   });
 
-  app.patch("/api/issues/:id/status", async (req, res) => {
+  app.patch("/api/issues/:id/status", authMiddleware, adminMiddleware, async (req: any, res: any) => {
     try {
       const { status, note } = req.body;
       const issueId = req.params.id;
@@ -294,7 +343,7 @@ async function startServer() {
     }
   });
 
-  app.patch("/api/issues/:id/assign", async (req, res) => {
+  app.patch("/api/issues/:id/assign", authMiddleware, adminMiddleware, async (req: any, res: any) => {
     try {
       const { corporation } = req.body;
       const issueId = req.params.id;
@@ -344,7 +393,7 @@ async function startServer() {
     }
   });
 
-  app.post("/api/issues/:id/comments", async (req, res) => {
+  app.post("/api/issues/:id/comments", authMiddleware, async (req: any, res: any) => {
     const { text, role } = req.body;
     const issueId = req.params.id;
     await Comment.create({ issue_id: issueId, text, user_role: role || 'user' });
