@@ -1,7 +1,7 @@
 import express from "express";
 import { createServer as createViteServer } from "vite";
 import mongoose from "mongoose";
-import { User, Issue, Vote, Comment, Timeline } from "./src/db-mongo.js";
+import { User, Issue, Vote, Comment, Timeline, connectDB } from "./src/db-mongo.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import multer from "multer";
@@ -28,6 +28,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 async function startServer() {
+  await connectDB();
   const app = express();
   const PORT = 3000;
 
@@ -200,11 +201,18 @@ async function startServer() {
   app.post("/api/auth/login", async (req, res) => {
     const { email, password } = req.body;
     const user = await User.findOne({ email });
-    if (!user || !(await bcrypt.compare(password, user.password))) {
+    if (!user) {
+      console.log(`[AUTH] Login failed: User not found - ${email}`);
+      return res.status(401).json({ error: "Invalid credentials" });
+    }
+    console.log(`[AUTH] User found: ${email}, role: ${user.role}. Comparing passwords...`);
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      console.log(`[AUTH] Login failed: Password mismatch for ${email}`);
       return res.status(401).json({ error: "Invalid credentials" });
     }
     const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET);
-    console.log(`User logged in: ${email} (Role: ${user.role})`);
+    console.log(`[AUTH] User logged in successfully: ${email} (Role: ${user.role})`);
     res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
   });
 
