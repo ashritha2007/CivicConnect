@@ -28,7 +28,6 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 async function startServer() {
-  await connectDB();
   const app = express();
   const PORT = 3000;
 
@@ -38,23 +37,25 @@ async function startServer() {
   // --- Auth Routes ---
   // Seed users
   const seedUsers = async () => {
-    // Admin 1
+    // Admin 1 - upsert so role is always correct
     const adminEmail = "admin@civicconnect.com";
-    const existingAdmin = await User.findOne({ email: adminEmail });
-    if (!existingAdmin) {
-      const hashedPassword = await bcrypt.hash("admin123", 10);
-      await User.create({ email: adminEmail, password: hashedPassword, role: 'admin' });
-      console.log("Admin user seeded: admin@civicconnect.com / admin123");
-    }
+    const hashedPasswordAdmin1 = await bcrypt.hash("admin123", 10);
+    await User.findOneAndUpdate(
+      { email: adminEmail },
+      { $set: { password: hashedPasswordAdmin1, role: 'admin' } },
+      { upsert: true, new: true }
+    );
+    console.log("Admin user upserted: admin@civicconnect.com / admin123 (role=admin)");
 
-    // Admin 2 - requested by user
+    // Admin 2 - upsert so role is always correct even if previously registered as user
     const adminEmail2 = "harshithsai597@gmail.com";
-    const existingAdmin2 = await User.findOne({ email: adminEmail2 });
-    if (!existingAdmin2) {
-      const hashedPassword2 = await bcrypt.hash("22052007", 10);
-      await User.create({ email: adminEmail2, password: hashedPassword2, role: 'admin' });
-      console.log("Admin user seeded: harshithsai597@gmail.com / 22052007");
-    }
+    const hashedPasswordAdmin2 = await bcrypt.hash("22052007", 10);
+    await User.findOneAndUpdate(
+      { email: adminEmail2 },
+      { $set: { password: hashedPasswordAdmin2, role: 'admin' } },
+      { upsert: true, new: true }
+    );
+    console.log("Admin user upserted: harshithsai597@gmail.com / 22052007 (role=admin)");
 
     // Demo Citizen
     const userEmail = "citizen@civicconnect.com";
@@ -193,8 +194,8 @@ async function startServer() {
     }
   };
 
-  await seedUsers();
-  await seedIssues();
+  // Start the server first, then connect to DB and seed in the background
+  // This prevents the server from crashing if MongoDB is temporarily unreachable
 
   app.post("/api/auth/register", async (req, res) => {
     const { email, password, role } = req.body;
@@ -439,9 +440,31 @@ async function startServer() {
     app.use(vite.middlewares);
   }
 
-  app.listen(PORT, "0.0.0.0", () => {
+  const server = app.listen(PORT, "0.0.0.0", () => {
     console.log(`Server running on http://localhost:${PORT}`);
   });
+
+  // Connect to MongoDB and seed data asynchronously — server stays alive even if DB is slow
+  const initDB = async () => {
+    try {
+      await connectDB();
+      // Wait for mongoose to be fully connected before seeding
+      const waitForConnection = () => new Promise<void>((resolve) => {
+        const check = () => {
+          if (mongoose.connection.readyState === 1) resolve();
+          else setTimeout(check, 500);
+        };
+        check();
+      });
+      await waitForConnection();
+      await seedUsers();
+      await seedIssues();
+      console.log("✅ Database seeding complete.");
+    } catch (err: any) {
+      console.error("⚠️ Database init error:", err.message);
+    }
+  };
+  initDB();
 }
 
 startServer();

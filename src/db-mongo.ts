@@ -9,18 +9,27 @@ if (!MONGODB_URI || MONGODB_URI === 'mongodb+srv://harshithsai597_db_user:<db_pa
 }
 
 let isConnected = false;
+
+const retryConnect = async (uri: string, retries = 0) => {
+    try {
+        await mongoose.connect(uri, {
+            serverSelectionTimeoutMS: 10000,
+            connectTimeoutMS: 10000,
+        });
+        isConnected = true;
+        console.log('✅ Successfully connected to MongoDB!');
+    } catch (err: any) {
+        console.error(`❌ MongoDB connection failed (attempt ${retries + 1}): ${err.message}`);
+        console.log('   → Retrying in 5 seconds...');
+        setTimeout(() => retryConnect(uri, retries + 1), 5000);
+    }
+};
+
 export const connectDB = async () => {
     if (isConnected) return;
     if (!MONGODB_URI) throw new Error('MONGODB_URI is not defined');
-
-    try {
-        await mongoose.connect(MONGODB_URI);
-        isConnected = true;
-        console.log('Successfully connected to MongoDB!');
-    } catch (err) {
-        console.error('MongoDB connection error:', err);
-        throw err;
-    }
+    retryConnect(MONGODB_URI);
+    // Don't await — allow server to start even if MongoDB is slow
 };
 
 export const UserSchema = new Schema({

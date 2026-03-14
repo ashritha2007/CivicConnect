@@ -105,7 +105,7 @@ const LandingPage = ({ setView }: { setView: (v: View) => void }) => (
   </motion.div>
 );
 
-// ─── Login Form (neutral black/grey) ──────────────────────────────────────--
+// ─── Login Form ──────────────────────────────────────────────────────────────
 const LoginForm = ({
   role,
   onAuth,
@@ -117,27 +117,70 @@ const LoginForm = ({
   const [showPassword, setShowPassword] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
 
+  const isAdmin = role === 'admin';
+  const accentColor = isAdmin ? 'red' : 'green';
+  const accentBorder = isAdmin ? 'border-red-500/30' : 'border-green-500/20';
+  const accentGlow = isAdmin
+    ? '0 0 60px rgba(239,68,68,0.12)'
+    : '0 0 60px rgba(34,197,94,0.10)';
+  const activeTabClass = isAdmin
+    ? 'bg-red-600 text-white shadow-lg shadow-red-500/30'
+    : 'bg-green-500 text-black shadow-lg shadow-green-500/30';
+  const submitClass = isAdmin
+    ? 'bg-red-600 hover:bg-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.25)] hover:shadow-[0_0_40px_rgba(239,68,68,0.35)]'
+    : 'bg-green-500 hover:bg-green-400 text-black shadow-[0_0_30px_rgba(34,197,94,0.25)] hover:shadow-[0_0_40px_rgba(34,197,94,0.35)]';
+  const iconColor = isAdmin ? 'text-red-400' : 'text-green-400';
+  const iconBg = isAdmin ? 'bg-red-500/10 border-red-500/20' : 'bg-green-500/10 border-green-500/20';
+
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md mx-auto mt-12">
-      <div className="bg-[#0d0d0d] border border-white/8 rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden">
-        {/* Subtle dark background gradient */}
+      <div
+        className={`bg-[#0d0d0d] border ${accentBorder} rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden`}
+        style={{ boxShadow: accentGlow }}
+      >
         <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none rounded-[2.5rem]" />
 
-        <div className="relative text-center mb-10">
-          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6 bg-white/5 border border-white/10">
-            {role === 'admin'
-              ? <Shield className="w-10 h-10 text-slate-400" />
-              : <User className="w-10 h-10 text-slate-400" />}
+        {/* Icon + Title */}
+        <div className="relative text-center mb-8">
+          <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5 ${iconBg} border`}>
+            {isAdmin ? <Shield className={`w-10 h-10 ${iconColor}`} /> : <User className={`w-10 h-10 ${iconColor}`} />}
           </div>
           <h2 className="text-3xl font-bold text-white tracking-tight">
-            {role === 'admin' ? 'Admin Gateway' : isSignUp ? 'Create Account' : 'Citizen Login'}
+            {isAdmin ? 'Admin Gateway' : 'Citizen Portal'}
           </h2>
           <p className="text-slate-500 mt-2 text-sm">
-            {role === 'admin'
-              ? 'Access the command center'
-              : isSignUp ? 'Sign up with any email to get started' : 'Sign in to report & track issues'}
+            {isAdmin ? 'Access the command center with admin credentials' : 'Join the community or sign in to your account'}
           </p>
         </div>
+
+        {/* Tab Toggle — only for user portal */}
+        {!isAdmin && (
+          <div className="flex bg-black/50 p-1.5 rounded-2xl border border-white/8 mb-8">
+            <button
+              type="button"
+              onClick={() => setIsSignUp(false)}
+              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${!isSignUp ? activeTabClass : 'text-slate-500 hover:text-white'
+                }`}
+            >
+              Sign In
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsSignUp(true)}
+              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${isSignUp ? activeTabClass : 'text-slate-500 hover:text-white'
+                }`}
+            >
+              Sign Up
+            </button>
+          </div>
+        )}
+
+        {/* Sub-label for tab context */}
+        {!isAdmin && (
+          <p className="text-xs text-slate-600 text-center -mt-4 mb-6">
+            {isSignUp ? '✦ Create a new account to start reporting issues' : '✦ Welcome back — sign in to continue'}
+          </p>
+        )}
 
         <form onSubmit={(e) => onAuth(e, role, loginData, isSignUp)} className="space-y-5 relative">
           <div className="space-y-2">
@@ -148,7 +191,7 @@ const LoginForm = ({
                 required
                 type="email"
                 className="w-full bg-black/50 border border-white/8 pl-12 pr-4 py-4 rounded-2xl outline-none focus:border-white/20 focus:ring-2 focus:ring-white/5 transition-all text-white placeholder:text-slate-700 text-sm"
-                placeholder={role === 'admin' ? 'admin@civicconnect.com' : 'you@example.com'}
+                placeholder={isAdmin ? 'admin@civicconnect.com' : 'you@example.com'}
                 value={loginData.email}
                 onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
               />
@@ -180,30 +223,20 @@ const LoginForm = ({
           <div className="pt-2">
             <button
               type="submit"
-              className="w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 group bg-white/10 hover:bg-white/15 text-white border border-white/10 hover:border-white/20"
+              className={`w-full py-4 rounded-2xl font-bold transition-all flex items-center justify-center gap-2 group ${submitClass}`}
             >
-              {isSignUp ? 'Sign Up' : 'Sign In'}
+              {isAdmin ? 'Access Portal' : isSignUp ? 'Create Account' : 'Sign In'}
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
         </form>
 
-        {role === 'user' && (
-          <div className="mt-6 text-center relative">
-            <button
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-sm text-slate-600 hover:text-slate-300 transition-colors"
-            >
-              {isSignUp ? 'Already have an account? Sign In' : "Don't have an account? Sign Up"}
-            </button>
-          </div>
-        )}
-
         <div className="mt-8 pt-6 border-t border-white/5 text-center relative">
           <p className="text-xs text-slate-600 leading-relaxed">
-            {role === 'admin'
+            {isAdmin
               ? 'Use your admin credentials to access the portal.'
-              : 'Register with any email — your voice matters!'}
+              : isSignUp ? 'Already have an account? Switch to Sign In above.'
+                : "New here? Switch to Sign Up above to get started!"}
           </p>
         </div>
       </div>
@@ -214,7 +247,10 @@ const LoginForm = ({
 // ─── Main App ─────────────────────────────────────────────────────────────--
 export default function App() {
   const [view, setView] = useState<View>('landing');
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(() => {
+    const savedUser = localStorage.getItem('user');
+    return savedUser ? JSON.parse(savedUser) : null;
+  });
   const [selectedIssueId, setSelectedIssueId] = useState<number | null>(null);
   const [adminSubView, setAdminSubView] = useState<'feed' | 'dashboard'>('feed');
 
@@ -226,6 +262,8 @@ export default function App() {
   useEffect(() => {
     if (!user && (view === 'feed' || view === 'report' || view === 'admin')) {
       setView('landing');
+    } else if (user && view === 'landing') {
+      setView(user.role === 'admin' ? 'admin' : 'feed');
     }
   }, [user, view]);
 
@@ -253,6 +291,8 @@ export default function App() {
           if (loginRes.ok) {
             const result = await loginRes.json();
             setUser(result.user);
+            localStorage.setItem('user', JSON.stringify(result.user));
+            localStorage.setItem('token', result.token);
             setView(result.user.role === 'admin' ? 'admin' : 'feed');
           }
         } else {
@@ -263,6 +303,8 @@ export default function App() {
             return;
           }
           setUser(result.user);
+          localStorage.setItem('user', JSON.stringify(result.user));
+          localStorage.setItem('token', result.token);
           setView(result.user.role === 'admin' ? 'admin' : 'feed');
         }
       } else {
@@ -277,6 +319,8 @@ export default function App() {
 
   const handleLogout = () => {
     setUser(null);
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     setView('landing');
   };
 
