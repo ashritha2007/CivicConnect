@@ -1,20 +1,43 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+CivicConnect is a web-based platform designed to improve communication between citizens and local authorities by enabling efficient reporting and management of civic issues. The application allows users to submit complaints related to common urban problems such as road damage, waste management, water leakage, and public infrastructure faults. Each report can include relevant details and supporting images, helping authorities better understand and address the issue.
 
-# Run and deploy your AI Studio app
+The platform focuses on simplicity and accessibility, providing an intuitive interface for users to easily report problems and track their status. By digitizing the complaint process, CivicConnect aims to enhance transparency, reduce response time, and encourage community participation in maintaining public infrastructure.
 
-This contains everything you need to run your app locally.
+Key Points:
 
-View your app in AI Studio: https://ai.studio/apps/a14ca9a5-763a-4f98-a0d3-b5ec0afa8903
+Enables users to report civic issues quickly and efficiently
 
-## Run Locally
+Supports image uploads for better issue clarity
 
-**Prerequisites:**  Node.js
+Allows tracking of complaint status
 
+User-friendly and accessible interface
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+Improves transparency between citizens and authorities
+
+Helps in faster identification and resolution of problems
+
+Why It Is Useful:
+
+Eliminates the need for manual complaint processes
+
+Saves time for both citizens and authorities
+
+Ensures issues are properly documented and not ignored
+
+Makes it easier to monitor progress and accountability
+
+Encourages active participation in community development
+
+What Makes It Special:
+
+Combines reporting, tracking, and communication in one platform
+
+Simple design that anyone can use without technical knowledge
+
+Real-time updates on issue status
+
+Focused on solving real-world local problems efficiently
+
+Scalable solution that can be expanded to different regions
+
+⭐ Winner of Ideathon at Indian Institutes of Management during IIM Open Campus Day for the "Idea to Impact Sprint" competition 🚀
