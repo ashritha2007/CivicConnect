@@ -2,7 +2,12 @@ CivicConnect is a web-based platform designed to improve communication between c
 
 The platform focuses on simplicity and accessibility, providing an intuitive interface for users to easily report problems and track their status. By digitizing the complaint process, CivicConnect aims to enhance transparency, reduce response time, and encourage community participation in maintaining public infrastructure.
 
-Key Points:
+
+
+<img width="1919" height="890" alt="image" src="https://github.com/user-attachments/assets/41f48a3b-0e93-41a2-aafd-50822242a76d" />
+
+
+*Key Points:*
 
 Enables users to report civic issues quickly and efficiently
 
@@ -16,7 +21,7 @@ Improves transparency between citizens and authorities
 
 Helps in faster identification and resolution of problems
 
-Why It Is Useful:
+*Why It Is Useful:*
 
 Eliminates the need for manual complaint processes
 
@@ -28,7 +33,7 @@ Makes it easier to monitor progress and accountability
 
 Encourages active participation in community development
 
-What Makes It Special:
+*What Makes It Special:*
 
 Combines reporting, tracking, and communication in one platform
 
