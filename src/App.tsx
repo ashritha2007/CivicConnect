@@ -37,21 +37,17 @@ type Theme = 'landing' | 'user' | 'admin';
 // ─── Nav Item ──────────────────────────────────────────────────────────────---
 const NavItem = ({ icon: Icon, label, active, onClick, theme }: any) => {
   const activeClass =
-    theme === 'user'
-      ? 'bg-yellow-500 text-black shadow-[0_0_20px_rgba(234,179,8,0.4)]'
-      : theme === 'admin'
-        ? 'bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.4)]'
-        : 'bg-green-500 text-black shadow-[0_0_20px_rgba(34,197,94,0.4)]';
+    theme === 'admin'
+      ? 'bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]'
+      : 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]';
   const hoverClass =
-    theme === 'user'
-      ? 'hover:text-yellow-400 hover:bg-white/5'
-      : theme === 'admin'
-        ? 'hover:text-red-400 hover:bg-white/5'
-        : 'hover:text-green-400 hover:bg-white/5';
+    theme === 'admin'
+      ? 'hover:text-red-600 hover:bg-red-50'
+      : 'hover:text-emerald-600 hover:bg-emerald-50';
   return (
     <button
       onClick={onClick}
-      className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold transition-all duration-300 ${active ? activeClass : `text-slate-400 ${hoverClass}`
+      className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl font-semibold transition-all duration-300 ${active ? activeClass : `text-slate-500 ${hoverClass}`
         }`}
     >
       <Icon className="w-5 h-5" />
@@ -189,48 +185,46 @@ const LoginForm = ({
   const [isSignUp, setIsSignUp] = useState(false);
 
   const isAdmin = role === 'admin';
-  const accentColor = isAdmin ? 'red' : 'green';
-  const accentBorder = isAdmin ? 'border-red-500/30' : 'border-green-500/20';
+  const accentBorder = isAdmin ? 'border-red-100' : 'border-emerald-100';
   const accentGlow = isAdmin
-    ? '0 0 60px rgba(239,68,68,0.12)'
-    : '0 0 60px rgba(34,197,94,0.10)';
+    ? '0 8px 40px rgba(239,68,68,0.06)'
+    : '0 8px 40px rgba(16,185,129,0.08)';
   const activeTabClass = isAdmin
-    ? 'bg-red-600 text-white shadow-lg shadow-red-500/30'
-    : 'bg-green-500 text-black shadow-lg shadow-green-500/30';
+    ? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
+    : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20';
   const submitClass = isAdmin
-    ? 'bg-red-600 hover:bg-red-500 text-white shadow-[0_0_30px_rgba(239,68,68,0.25)] hover:shadow-[0_0_40px_rgba(239,68,68,0.35)]'
-    : 'bg-green-500 hover:bg-green-400 text-black shadow-[0_0_30px_rgba(34,197,94,0.25)] hover:shadow-[0_0_40px_rgba(34,197,94,0.35)]';
-  const iconColor = isAdmin ? 'text-red-400' : 'text-green-400';
-  const iconBg = isAdmin ? 'bg-red-500/10 border-red-500/20' : 'bg-green-500/10 border-green-500/20';
+    ? 'bg-red-600 hover:bg-red-700 text-white shadow-[0_4px_20px_rgba(239,68,68,0.2)]'
+    : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_4px_20px_rgba(16,185,129,0.2)]';
+  const iconColor = isAdmin ? 'text-red-500' : 'text-emerald-500';
+  const iconBg = isAdmin ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100';
+  const focusBorder = isAdmin ? 'focus:border-red-400 focus:ring-2 focus:ring-red-100' : 'focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100';
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md mx-auto mt-12">
       <div
-        className={`bg-[#0d0d0d] border ${accentBorder} rounded-[2.5rem] p-10 shadow-2xl relative overflow-hidden`}
+        className={`bg-white border ${accentBorder} rounded-[2.5rem] p-10 shadow-xl relative overflow-hidden`}
         style={{ boxShadow: accentGlow }}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent pointer-events-none rounded-[2.5rem]" />
-
         {/* Icon + Title */}
         <div className="relative text-center mb-8">
           <div className={`w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-5 ${iconBg} border`}>
             {isAdmin ? <Shield className={`w-10 h-10 ${iconColor}`} /> : <User className={`w-10 h-10 ${iconColor}`} />}
           </div>
-          <h2 className="text-3xl font-bold text-white tracking-tight">
+          <h2 className="text-3xl font-bold text-slate-900 tracking-tight">
             {isAdmin ? 'Admin Gateway' : 'Citizen Portal'}
           </h2>
-          <p className="text-slate-500 mt-2 text-sm">
+          <p className="text-slate-400 mt-2 text-sm">
             {isAdmin ? 'Access the command center with admin credentials' : 'Join the community or sign in to your account'}
           </p>
         </div>
 
         {/* Tab Toggle — only for user portal */}
         {!isAdmin && (
-          <div className="flex bg-black/50 p-1.5 rounded-2xl border border-white/8 mb-8">
+          <div className="flex bg-slate-100 p-1.5 rounded-2xl border border-slate-200 mb-8">
             <button
               type="button"
               onClick={() => setIsSignUp(false)}
-              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${!isSignUp ? activeTabClass : 'text-slate-500 hover:text-white'
+              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${!isSignUp ? activeTabClass : 'text-slate-500 hover:text-slate-700'
                 }`}
             >
               Sign In
@@ -238,7 +232,7 @@ const LoginForm = ({
             <button
               type="button"
               onClick={() => setIsSignUp(true)}
-              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${isSignUp ? activeTabClass : 'text-slate-500 hover:text-white'
+              className={`flex-1 py-3 rounded-xl text-sm font-bold transition-all duration-300 ${isSignUp ? activeTabClass : 'text-slate-500 hover:text-slate-700'
                 }`}
             >
               Sign Up
@@ -248,7 +242,7 @@ const LoginForm = ({
 
         {/* Sub-label for tab context */}
         {!isAdmin && (
-          <p className="text-xs text-slate-600 text-center -mt-4 mb-6">
+          <p className="text-xs text-slate-400 text-center -mt-4 mb-6">
             {isSignUp ? '✦ Create a new account to start reporting issues' : '✦ Welcome back — sign in to continue'}
           </p>
         )}
@@ -257,11 +251,11 @@ const LoginForm = ({
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Email</label>
             <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600" />
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 required
                 type="email"
-                className="w-full bg-black/50 border border-white/8 pl-12 pr-4 py-4 rounded-2xl outline-none focus:border-white/20 focus:ring-2 focus:ring-white/5 transition-all text-white placeholder:text-slate-700 text-sm"
+                className={`w-full bg-slate-50 border border-slate-200 pl-12 pr-4 py-4 rounded-2xl outline-none transition-all text-slate-800 placeholder:text-slate-400 text-sm ${focusBorder}`}
                 placeholder={isAdmin ? 'admin@civicconnect.com' : 'you@example.com'}
                 value={loginData.email}
                 onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
@@ -272,11 +266,11 @@ const LoginForm = ({
           <div className="space-y-2">
             <label className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Password</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600" />
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
               <input
                 required
                 type={showPassword ? 'text' : 'password'}
-                className="w-full bg-black/50 border border-white/8 pl-12 pr-12 py-4 rounded-2xl outline-none focus:border-white/20 focus:ring-2 focus:ring-white/5 transition-all text-white placeholder:text-slate-700 text-sm"
+                className={`w-full bg-slate-50 border border-slate-200 pl-12 pr-12 py-4 rounded-2xl outline-none transition-all text-slate-800 placeholder:text-slate-400 text-sm ${focusBorder}`}
                 placeholder="••••••••"
                 value={loginData.password}
                 onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
@@ -284,7 +278,7 @@ const LoginForm = ({
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-600 hover:text-slate-300 transition-colors"
+                className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -302,8 +296,8 @@ const LoginForm = ({
           </div>
         </form>
 
-        <div className="mt-8 pt-6 border-t border-white/5 text-center relative">
-          <p className="text-xs text-slate-600 leading-relaxed">
+        <div className="mt-8 pt-6 border-t border-slate-100 text-center relative">
+          <p className="text-xs text-slate-400 leading-relaxed">
             {isAdmin
               ? 'Use your admin credentials to access the portal.'
               : isSignUp ? 'Already have an account? Switch to Sign In above.'
@@ -341,23 +335,23 @@ const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue:
   return (
     <div className="space-y-6">
       {/* Global Hero Summary Section */}
-      <div className="relative p-8 rounded-[2.5rem] overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(30,0,0,0.92) 0%, rgba(8,0,0,0.96) 100%)', border: '1px solid rgba(239,68,68,0.22)' }}>
-        <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/10 blur-[120px] rounded-full -mr-48 -mt-48 pointer-events-none" />
-        <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-900/10 blur-[80px] rounded-full -ml-32 -mb-32 pointer-events-none" />
+      <div className="relative p-8 rounded-[2.5rem] overflow-hidden bg-gradient-to-br from-emerald-600 to-teal-700" style={{ boxShadow: '0 8px 40px rgba(16,185,129,0.2)' }}>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 blur-[120px] rounded-full -mr-48 -mt-48 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-900/20 blur-[80px] rounded-full -ml-32 -mb-32 pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
            <div>
-             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest mb-4">
-               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-[10px] font-bold uppercase tracking-widest mb-4">
+               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                Central Monitoring System — Live
              </div>
-             <h2 className="text-4xl font-bold text-white tracking-tighter">System <span style={{ color: '#ff2020' }}>Overview</span></h2>
-             <p className="text-slate-400 mt-2 text-sm max-w-lg">Real-time aggregation of all reported issues across all interconnected municipal corporations.</p>
+             <h2 className="text-4xl font-bold text-white tracking-tighter">System <span className="text-emerald-200">Overview</span></h2>
+             <p className="text-emerald-100 mt-2 text-sm max-w-lg">Real-time aggregation of all reported issues across all interconnected municipal corporations.</p>
            </div>
            
-           <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5">
-              <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'dashboard' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'text-slate-500 hover:text-white'}`}>Dashboards</button>
-              <button onClick={() => setActiveTab('feed')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'feed' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'text-slate-500 hover:text-white'}`}>Live Issue Feed</button>
+           <div className="flex bg-white/10 p-1.5 rounded-2xl border border-white/20">
+              <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'dashboard' ? 'bg-white text-emerald-700 shadow-lg' : 'text-white/70 hover:text-white'}`}>Dashboards</button>
+              <button onClick={() => setActiveTab('feed')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'feed' ? 'bg-white text-emerald-700 shadow-lg' : 'text-white/70 hover:text-white'}`}>Live Issue Feed</button>
            </div>
         </div>
 
@@ -365,22 +359,22 @@ const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue:
         {globalStats ? (
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total Issues', value: globalStats.total, icon: AlertTriangle, color: 'text-red-500' },
-              { label: 'Resolved', value: globalStats.resolved, icon: CheckCircle2, color: 'text-emerald-500' },
-              { label: 'In Progress', value: globalStats.pending, icon: Clock, color: 'text-amber-500' },
-              { label: 'Not Started', value: globalStats.total - globalStats.resolved - globalStats.pending, icon: Shield, color: 'text-slate-400' }
+              { label: 'Total Issues', value: globalStats.total, icon: AlertTriangle, color: 'text-amber-300' },
+              { label: 'Resolved', value: globalStats.resolved, icon: CheckCircle2, color: 'text-emerald-200' },
+              { label: 'In Progress', value: globalStats.pending, icon: Clock, color: 'text-blue-200' },
+              { label: 'High Priority', value: globalStats.highPriority, icon: Shield, color: 'text-red-300' }
             ].map((stat, i) => (
-              <div key={i} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex items-center gap-4">
-                 <div className={`p-3 rounded-xl bg-white/5 ${stat.color}`}><stat.icon className="w-5 h-5" /></div>
+              <div key={i} className="bg-white/10 border border-white/20 rounded-2xl p-4 flex items-center gap-4 backdrop-blur-sm">
+                 <div className={`p-3 rounded-xl bg-white/10 ${stat.color}`}><stat.icon className="w-5 h-5" /></div>
                  <div>
                    <p className="text-2xl font-bold text-white">{stat.value}</p>
-                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{stat.label}</p>
+                   <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">{stat.label}</p>
                  </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="h-20 flex flex-col justify-center text-red-500/60 font-medium text-sm animate-pulse">Aggregating global telemetry...</div>
+          <div className="h-20 flex flex-col justify-center text-white/60 font-medium text-sm animate-pulse">Aggregating global telemetry...</div>
         )}
       </div>
 
@@ -388,13 +382,17 @@ const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue:
       {activeTab === 'dashboard' && (
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar */}
-          <div className="lg:w-64 shrink-0 flex flex-col gap-2 bg-[#0d0d0d] border border-white/5 rounded-[2.5rem] p-4 h-fit">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600 px-4 pt-2 pb-4">Dashboards</h3>
+          <div className="lg:w-64 shrink-0 flex flex-col gap-2 bg-emerald-700 rounded-[2.5rem] p-4 h-fit shadow-lg">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-200 px-4 pt-2 pb-4">Dashboards</h3>
             {corporations.map(corp => (
                <button 
                  key={corp.id} 
                  onClick={() => setActiveCorp(corp.id)}
-                 className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all ${activeCorp === corp.id ? 'bg-red-500/10 border-red-500/20 text-red-400 shadow-[inset_0_0_20px_rgba(239,68,68,0.05)]' : 'border-transparent text-slate-400 hover:bg-white/5 hover:text-white'}`}
+                 className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all ${
+                   activeCorp === corp.id
+                     ? 'bg-white text-emerald-700 shadow-md'
+                     : 'text-emerald-100 hover:bg-white/10'
+                 }`}
                >
                  <corp.icon className="w-4 h-4 shrink-0" />
                  <span className="text-sm font-bold truncate">{corp.name}</span>
@@ -411,7 +409,7 @@ const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue:
 
       {/* Live Feed fallback */}
       {activeTab === 'feed' && (
-         <div className="bg-[#0d0d0d] border border-white/5 rounded-[2.5rem] p-6 lg:p-10">
+         <div className="bg-white border border-emerald-100 rounded-[2.5rem] p-6 lg:p-10 shadow-sm">
            <IssueList onSelect={onSelectIssue} isAdmin={true} userRole={user.role} />
          </div>
       )}
@@ -509,31 +507,27 @@ export default function App() {
   // Colors per theme
   const logoGlow =
     theme === 'admin'
-      ? 'bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.5)]'
-      : theme === 'user'
-        ? 'bg-yellow-500 shadow-[0_0_20px_rgba(234,179,8,0.4)]'
-        : 'bg-green-500 shadow-[0_0_20px_rgba(34,197,94,0.4)]';
+      ? 'bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.4)]'
+      : 'bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]';
 
   const accentText =
-    theme === 'admin' ? 'text-red-500' : theme === 'user' ? 'text-yellow-400' : 'text-green-400';
+    theme === 'admin' ? 'text-red-600' : 'text-emerald-600';
 
   const roleTextColor =
-    theme === 'admin' ? 'text-red-500' : 'text-yellow-500';
-
+    theme === 'admin' ? 'text-red-500' : 'text-emerald-600';
 
   const avatarBg =
     theme === 'admin'
-      ? 'bg-red-500/10 border-red-500/20 text-red-500'
-      : 'bg-yellow-500/10 border-yellow-500/20 text-yellow-400';
+      ? 'bg-red-50 border-red-200 text-red-600'
+      : 'bg-emerald-50 border-emerald-200 text-emerald-700';
 
   const headerBg =
     theme === 'admin'
-      ? 'bg-[#080000]/95 border-red-900/30 shadow-[0_1px_30px_rgba(180,0,0,0.18)]'
-      : 'bg-[#0a0a00]/95 border-yellow-500/10 shadow-[0_1px_20px_rgba(180,180,0,0.05)]';
-
+      ? 'bg-white/95 border-red-100 shadow-[0_1px_20px_rgba(239,68,68,0.06)]'
+      : 'bg-white/95 border-emerald-100 shadow-[0_1px_20px_rgba(16,185,129,0.06)]';
 
   const rootBg =
-    theme === 'admin' ? 'bg-[#020000]' : 'bg-[#050505]';
+    theme === 'admin' ? 'bg-red-50/30' : 'bg-[#f0fdf4]';
 
   return (
     <div className={`min-h-screen ${rootBg} theme-${theme} flex flex-col selection:bg-white/20`}>
@@ -624,7 +618,7 @@ export default function App() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden p-6 bg-black/90 border-t border-white/5 space-y-3 overflow-hidden"
+              className="md:hidden p-6 bg-white border-t border-emerald-100 space-y-3 overflow-hidden"
             >
               {user ? (
                 <>
@@ -669,7 +663,7 @@ export default function App() {
       <main className="flex-1 max-w-7xl mx-auto w-full p-6 md:p-12">
         {view === 'landing' && <LandingPage setView={setView} />}
 
-        {/* User Feed (yellow theme) */}
+        {/* User Feed (green theme) */}
         {view === 'feed' && (
           <div className="space-y-12">
             {user?.role === 'user' && (
@@ -680,15 +674,15 @@ export default function App() {
             )}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="max-w-2xl">
-                <h2 className="text-5xl font-bold text-white tracking-tighter">
-                  Community <span className="text-yellow-400" style={{ textShadow: '0 0 30px rgba(234,179,8,0.4)' }}>Pulse</span>
+                <h2 className="text-5xl font-bold text-slate-900 tracking-tighter">
+                  Community <span className="text-emerald-500">Pulse</span>
                 </h2>
-                <p className="text-slate-400 mt-4 text-lg">Real-time civic reporting and resolution tracking. Your voice, amplified.</p>
+                <p className="text-slate-500 mt-4 text-lg">Real-time civic reporting and resolution tracking. Your voice, amplified.</p>
               </div>
               {user?.role === 'user' && (
                 <button
                   onClick={() => setView('report')}
-                  className="px-8 py-4 bg-yellow-500 text-black rounded-[2rem] font-bold hover:bg-yellow-400 transition-all shadow-[0_0_30px_rgba(234,179,8,0.25)] flex items-center justify-center gap-3 group"
+                  className="px-8 py-4 bg-emerald-500 text-white rounded-[2rem] font-bold hover:bg-emerald-600 transition-all shadow-[0_4px_20px_rgba(16,185,129,0.2)] flex items-center justify-center gap-3 group"
                 >
                   <PlusCircle className="w-6 h-6" />
                   <span>Report Issue</span>
@@ -722,19 +716,19 @@ export default function App() {
       </main>
 
       {/* ── Footer ── */}
-      <footer className="bg-black py-10 border-t border-white/5">
+      <footer className="bg-white py-10 border-t border-emerald-100">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row justify-between items-center gap-6">
           <div className="flex items-center gap-3">
             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${logoGlow}`}>
-              <Megaphone className="w-5 h-5 text-black" />
+              <Megaphone className="w-5 h-5 text-white" />
             </div>
-            <span className="text-white font-bold tracking-tight">CivicConnect</span>
+            <span className="text-slate-900 font-bold tracking-tight">CivicConnect</span>
           </div>
-          <p className="text-slate-500 text-sm">© 2026 CivicConnect • Empowering Citizens for a Better Tomorrow</p>
+          <p className="text-slate-400 text-sm">© 2026 CivicConnect • Empowering Citizens for a Better Tomorrow</p>
           <div className="flex gap-6">
-            <a href="#" className="text-slate-500 hover:text-white text-sm transition-colors">Privacy</a>
-            <a href="#" className="text-slate-500 hover:text-white text-sm transition-colors">Terms</a>
-            <a href="#" className="text-slate-500 hover:text-white text-sm transition-colors">Contact</a>
+            <a href="#" className="text-slate-400 hover:text-emerald-600 text-sm transition-colors">Privacy</a>
+            <a href="#" className="text-slate-400 hover:text-emerald-600 text-sm transition-colors">Terms</a>
+            <a href="#" className="text-slate-400 hover:text-emerald-600 text-sm transition-colors">Contact</a>
           </div>
         </div>
       </footer>

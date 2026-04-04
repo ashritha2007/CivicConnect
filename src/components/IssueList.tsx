@@ -39,14 +39,13 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, onSelect, 
       exit={{ opacity: 0, scale: 0.95 }}
       whileHover={{ y: -5, transition: { duration: 0.2 } }}
       onClick={() => onSelect(issue.id)}
-      className={`group relative rounded-[2.5rem] overflow-hidden transition-all cursor-pointer ${isCritical
-        ? 'critical-glow'
-        : isHighVoted || issue.is_high_priority
-          ? 'high-priority-glow'
-          : isAdmin
-            ? 'admin-glow-card'
+      className={`group relative rounded-[2.5rem] overflow-hidden transition-all cursor-pointer bg-white ${
+        isCritical
+          ? 'critical-glow'
+          : isHighVoted || issue.is_high_priority
+            ? 'high-priority-glow'
             : 'glass-card'
-        }`}
+      }`}
     >
       {/* Top accent bar */}
       {isCritical && (
@@ -55,7 +54,7 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, onSelect, 
 
       {issue.photo_url && (
         <div className="h-60 overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent z-10" />
           <img
             src={issue.photo_url}
             alt={issue.title}
@@ -76,14 +75,15 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, onSelect, 
 
       <div className="p-8 space-y-4">
         <div className="flex justify-between items-start gap-4">
-          <h3 className={`font-bold text-2xl line-clamp-2 leading-tight transition-colors ${isCritical ? 'text-white' : isHighVoted || issue.is_high_priority ? 'text-red-300 group-hover:text-red-200' : 'text-white group-hover:text-red-400'
-            }`}>
+          <h3 className={`font-bold text-2xl line-clamp-2 leading-tight transition-colors ${
+            isCritical ? 'text-slate-900' : isHighVoted || issue.is_high_priority ? 'text-amber-700 group-hover:text-amber-800' : 'text-slate-900 group-hover:text-emerald-700'
+          }`}>
             {issue.title}
           </h3>
           <div className="flex items-center gap-1.5 shrink-0 mt-1">
             {isCritical && <Skull className="w-5 h-5 text-red-500 animate-bounce" />}
             {isHighVoted && (
-              <Flame className={`w-5 h-5 fill-current animate-pulse ${isAdmin ? 'text-red-400' : 'text-yellow-400'}`} />
+              <Flame className="w-5 h-5 fill-current animate-pulse text-amber-500" />
             )}
           </div>
         </div>
@@ -101,32 +101,33 @@ export const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, onSelect, 
           </div>
         )}
 
-        <p className="text-slate-400 text-base line-clamp-3 leading-relaxed">{issue.description}</p>
+        <p className="text-slate-500 text-base line-clamp-3 leading-relaxed">{issue.description}</p>
 
-        <div className="flex items-center gap-4 text-slate-500 text-xs font-bold uppercase tracking-wider">
-          <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
-            <MapPin className={`w-4 h-4 ${isCritical || isAdmin ? 'text-red-500' : 'text-yellow-500'}`} /> {issue.locality}
+        <div className="flex items-center gap-4 text-slate-400 text-xs font-bold uppercase tracking-wider">
+          <span className="flex items-center gap-1.5 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100">
+            <MapPin className="w-4 h-4 text-emerald-500" /> {issue.locality}
           </span>
-          <span className="bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+          <span className="bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-100 text-slate-400">
             {formatDistanceToNow(new Date(issue.createdAt || issue.created_at))} ago
           </span>
         </div>
 
-        <div className="pt-6 flex items-center justify-between border-t border-white/5 mt-2">
+        <div className="pt-6 flex items-center justify-between border-t border-slate-100 mt-2">
           <button
             onClick={(e) => onVote(issue.id, e)}
             disabled={isAdmin}
-            className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all text-sm font-bold ${isAdmin
-              ? 'bg-white/5 text-slate-500 cursor-not-allowed'
-              : `bg-white/5 hover:bg-yellow-500 hover:text-black ${isHighVoted ? 'text-yellow-400' : ''}`
-              }`}
+            className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all text-sm font-bold ${
+              isAdmin
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                : `bg-emerald-50 text-emerald-700 hover:bg-emerald-500 hover:text-white border border-emerald-100 hover:border-emerald-500 ${isHighVoted ? 'text-emerald-700' : ''}`
+            }`}
           >
             <ThumbsUp className={`w-4 h-4 ${issue.votes > 0 ? 'fill-current' : ''}`} />
             <span>{issue.votes} Support</span>
           </button>
-          <div className="flex items-center gap-2 text-slate-400 group-hover:text-white transition-colors">
-            <span className="text-xs font-bold uppercase tracking-widest">{isAdmin ? 'Action Required' : 'View Impact'}</span>
-            <ChevronRight className={`w-4 h-4 ${isCritical ? 'text-red-500' : isAdmin ? 'text-red-400' : 'text-yellow-500'}`} />
+          <div className="flex items-center gap-2 text-slate-400 group-hover:text-emerald-600 transition-colors">
+            <span className="text-xs font-bold uppercase tracking-widest">{isAdmin ? 'Review Case' : 'View Impact'}</span>
+            <ChevronRight className={`w-4 h-4 ${isCritical ? 'text-red-500' : 'text-emerald-500'}`} />
           </div>
         </div>
       </div>
@@ -182,38 +183,37 @@ export const IssueList: React.FC<{ onSelect: (id: number) => void; isAdmin?: boo
       {/* Search and filter bar */}
       <div className="flex flex-col md:flex-row gap-4 items-center">
         <div className="relative flex-1 w-full">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
           <input
             type="text"
             placeholder="Search issues or areas..."
-            className={`w-full bg-white/5 border border-white/10 pl-12 pr-4 py-4 rounded-2xl outline-none transition-all text-white ${isAdmin ? 'focus:border-red-500/50 focus:ring-red-500/10' : 'focus:border-yellow-500/50 focus:ring-yellow-500/10'
-              }`}
+            className="w-full bg-white border border-slate-200 pl-12 pr-4 py-4 rounded-2xl outline-none transition-all text-slate-800 placeholder:text-slate-400 focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex gap-2 w-full md:w-auto">
           <select
-            className="flex-1 md:flex-none bg-white/5 border border-white/10 text-slate-300 rounded-2xl px-4 py-4 text-sm outline-none focus:border-red-500/50 transition-all"
+            className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-700 rounded-2xl px-4 py-4 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
             value={filter.category}
             onChange={(e) => setFilter({ ...filter, category: e.target.value })}
           >
-            <option value="" className="bg-black">All Categories</option>
-            <option className="bg-black">Roads</option>
-            <option className="bg-black">Sanitation</option>
-            <option className="bg-black">Water Supply</option>
-            <option className="bg-black">Electricity</option>
-            <option className="bg-black">Public Safety</option>
+            <option value="">All Categories</option>
+            <option>Roads</option>
+            <option>Sanitation</option>
+            <option>Water Supply</option>
+            <option>Electricity</option>
+            <option>Public Safety</option>
           </select>
           <select
-            className="flex-1 md:flex-none bg-white/5 border border-white/10 text-slate-300 rounded-2xl px-4 py-4 text-sm outline-none focus:border-red-500/50 transition-all"
+            className="flex-1 md:flex-none bg-white border border-slate-200 text-slate-700 rounded-2xl px-4 py-4 text-sm outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all"
             value={filter.status}
             onChange={(e) => setFilter({ ...filter, status: e.target.value })}
           >
-            <option value="" className="bg-black">All Status</option>
-            <option value="not_started" className="bg-black">Not Started</option>
-            <option value="in_progress" className="bg-black">In Progress</option>
-            <option value="resolved" className="bg-black">Resolved</option>
+            <option value="">All Status</option>
+            <option value="not_started">Not Started</option>
+            <option value="in_progress">In Progress</option>
+            <option value="resolved">Resolved</option>
           </select>
         </div>
       </div>
@@ -222,17 +222,13 @@ export const IssueList: React.FC<{ onSelect: (id: number) => void; isAdmin?: boo
       {topIssues.length > 0 && (
         <div className="space-y-4">
           <div className="flex items-center gap-3">
-            <div className="flex items-center gap-2 px-4 py-2 rounded-full"
-              style={{
-                background: isAdmin ? 'rgba(239,68,68,0.1)' : 'rgba(234,179,8,0.1)',
-                border: `1px solid ${isAdmin ? 'rgba(239,68,68,0.3)' : 'rgba(234,179,8,0.3)'}`
-              }}>
-              <Flame className={`w-4 h-4 fill-current animate-pulse ${isAdmin ? 'text-red-500' : 'text-yellow-500'}`} />
-              <span className={`text-xs font-bold uppercase tracking-widest ${isAdmin ? 'text-red-400' : 'text-yellow-400'}`}>
-                {isAdmin ? 'GVMC — Immediate Attention Required' : 'Community Alert — High-Priority Issues'}
+            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-amber-50 border border-amber-200">
+              <Flame className="w-4 h-4 fill-current animate-pulse text-amber-500" />
+              <span className="text-xs font-bold uppercase tracking-widest text-amber-600">
+                Community Alert — High-Priority Issues
               </span>
             </div>
-            <div className={`flex-1 h-px bg-gradient-to-r ${isAdmin ? 'from-red-500/30' : 'from-yellow-500/30'} to-transparent`} />
+            <div className="flex-1 h-px bg-gradient-to-r from-amber-300/50 to-transparent" />
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             <AnimatePresence mode="popLayout">
@@ -250,7 +246,7 @@ export const IssueList: React.FC<{ onSelect: (id: number) => void; isAdmin?: boo
           {topIssues.length > 0 && (
             <div className="flex items-center gap-3">
               <span className="text-slate-500 text-xs font-bold uppercase tracking-widest">All Reports</span>
-              <div className="flex-1 h-px bg-white/5" />
+              <div className="flex-1 h-px bg-slate-100" />
             </div>
           )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

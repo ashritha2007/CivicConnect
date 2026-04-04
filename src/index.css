@@ -4,158 +4,144 @@
 @theme {
   --font-sans: "Outfit", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --color-primary: #10B981;
+  --color-primary-dark: #047857;
+  --color-primary-darker: #065F46;
+  --color-primary-light: #D1FAE5;
+  --color-primary-lighter: #ECFDF5;
 }
-
-
 
 @layer base {
   body {
-    @apply font-sans bg-[#050505] text-slate-200;
+    @apply font-sans bg-[#f0fdf4] text-slate-800;
   }
 }
-
 
 /* ─── Leaflet ─────────────────────────────────────────── */
 .leaflet-container {
   width: 100%;
   height: 100%;
   border-radius: 1rem;
-  filter: invert(100%) hue-rotate(180deg) brightness(95%) contrast(90%);
 }
 
-/* ─── Glass Cards ─────────────────────────────────────── */
+/* ─── Glass / Surface Cards ───────────────────────────── */
 .glass-card {
-  @apply bg-white/5 backdrop-blur-xl border border-white/10 shadow-2xl;
+  background: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.18);
+  box-shadow: 0 4px 24px rgba(16, 185, 129, 0.08);
+  backdrop-filter: blur(8px);
 }
 
-/* Admin portal deep dark glass */
+.glass-card:hover {
+  border-color: rgba(16, 185, 129, 0.35);
+  box-shadow: 0 8px 32px rgba(16, 185, 129, 0.15);
+}
+
+/* ─── Admin Card (keep red alert identity) ────────────── */
 .admin-glass {
-  background: rgba(20, 0, 0, 0.7);
+  background: rgba(255, 255, 255, 0.97);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(239, 68, 68, 0.15);
-  box-shadow: 0 0 40px rgba(180, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  box-shadow: 0 4px 30px rgba(239, 68, 68, 0.06), inset 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .admin-glow-card {
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  box-shadow: 0 0 18px rgba(180, 0, 0, 0.15), 0 0 50px rgba(180, 0, 0, 0.04);
-  background: rgba(12, 0, 0, 0.6);
-  backdrop-filter: blur(20px);
+  background: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 2px 16px rgba(16, 185, 129, 0.1);
 }
 
 .admin-glow-card:hover {
-  border-color: rgba(239, 68, 68, 0.45);
-  box-shadow: 0 0 28px rgba(200, 0, 0, 0.3), 0 0 70px rgba(180, 0, 0, 0.08);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 6px 28px rgba(16, 185, 129, 0.2);
 }
 
-/* User glass card (yellow) */
+/* ─── User glow card (green theme) ───────────────────── */
 .user-glow-card {
-  border: 1px solid rgba(234, 179, 8, 0.2);
-  box-shadow: 0 0 18px rgba(180, 130, 0, 0.12), 0 0 50px rgba(180, 130, 0, 0.04);
-  background: rgba(12, 10, 0, 0.6);
-  backdrop-filter: blur(20px);
+  background: #ffffff;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  box-shadow: 0 2px 16px rgba(16, 185, 129, 0.08);
 }
 
 .user-glow-card:hover {
-  border-color: rgba(234, 179, 8, 0.45);
-  box-shadow: 0 0 28px rgba(200, 150, 0, 0.25), 0 0 70px rgba(180, 130, 0, 0.08);
+  border-color: rgba(16, 185, 129, 0.4);
+  box-shadow: 0 6px 28px rgba(16, 185, 129, 0.18);
 }
 
-/* Critical fatality/life-threatening alert */
+/* ─── Critical / Fatality alert (stays red) ───────────── */
 .critical-glow {
-  background: linear-gradient(135deg, rgba(60, 0, 0, 0.95) 0%, rgba(20, 0, 0, 0.98) 100%);
-  border: 1px solid rgba(255, 0, 0, 0.8) !important;
-  box-shadow: 0 0 30px rgba(255, 0, 0, 0.5), 0 0 80px rgba(255, 0, 0, 0.2) !important;
+  background: linear-gradient(135deg, #fff5f5 0%, #fff 100%);
+  border: 1px solid rgba(239, 68, 68, 0.6) !important;
+  box-shadow: 0 0 24px rgba(239, 68, 68, 0.25), 0 0 60px rgba(239, 68, 68, 0.08) !important;
   animation: criticalPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes criticalPulse {
-  0%, 100% { border-color: rgba(255, 0, 0, 0.8); box-shadow: 0 0 30px rgba(255, 0, 0, 0.5); }
-  50% { border-color: rgba(255, 70, 70, 1); box-shadow: 0 0 50px rgba(255, 0, 0, 0.8); }
+  0%, 100% { border-color: rgba(239, 68, 68, 0.6); box-shadow: 0 0 24px rgba(239, 68, 68, 0.25); }
+  50% { border-color: rgba(239, 68, 68, 0.9); box-shadow: 0 0 40px rgba(239, 68, 68, 0.4); }
 }
 
-/* Scroll reveal helper */
+/* ─── Scroll reveal ───────────────────────────────────── */
 .reveal-on-scroll {
   opacity: 0;
   transform: translateY(30px);
   transition: all 0.8s cubic-bezier(0.22, 1, 0.36, 1);
 }
-
 .reveal-on-scroll.is-visible {
   opacity: 1;
   transform: translateY(0);
 }
 
-/* ─── High-priority pulse ─────────────────────────────── */
+/* ─── High-priority glow (amber/orange) ───────────────── */
 .high-priority-glow {
-  border: 1px solid rgba(239, 68, 68, 0.6) !important;
-  box-shadow: 0 0 20px rgba(220, 0, 0, 0.4), 0 0 50px rgba(200, 0, 0, 0.15) !important;
+  border: 1px solid rgba(245, 158, 11, 0.5) !important;
+  box-shadow: 0 0 18px rgba(245, 158, 11, 0.2), 0 0 40px rgba(245, 158, 11, 0.08) !important;
   animation: priorityPulse 2.5s ease-in-out infinite;
 }
 
 @keyframes priorityPulse {
-
-  0%,
-  100% {
-    box-shadow: 0 0 20px rgba(220, 0, 0, 0.4), 0 0 50px rgba(200, 0, 0, 0.15);
-  }
-
-  50% {
-    box-shadow: 0 0 35px rgba(239, 68, 68, 0.6), 0 0 70px rgba(220, 0, 0, 0.25);
-  }
+  0%, 100% { box-shadow: 0 0 18px rgba(245, 158, 11, 0.2), 0 0 40px rgba(245, 158, 11, 0.08); }
+  50% { box-shadow: 0 0 28px rgba(245, 158, 11, 0.35), 0 0 60px rgba(245, 158, 11, 0.14); }
 }
 
 /* ─── Status Pills ────────────────────────────────────── */
 .status-not_started {
-  background: rgba(239, 68, 68, 0.1);
-  color: #f87171;
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
 .status-in_progress {
-  background: rgba(234, 179, 8, 0.1);
-  color: #facc15;
-  border: 1px solid rgba(234, 179, 8, 0.2);
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
 .status-resolved {
   background: rgba(16, 185, 129, 0.1);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
+/* User theme status overrides — same green theme */
 .theme-user .status-not_started {
-  background: rgba(255, 255, 255, 0.05);
-  color: #94a3b8;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  border: 1px solid rgba(239, 68, 68, 0.2);
 }
-
 .theme-user .status-in_progress {
-  background: rgba(234, 179, 8, 0.1);
-  color: #facc15;
-  border: 1px solid rgba(234, 179, 8, 0.2);
+  background: rgba(245, 158, 11, 0.1);
+  color: #d97706;
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
-
 .theme-user .status-resolved {
-  background: rgba(234, 179, 8, 0.05);
-  color: #eab308;
-  border: 1px solid rgba(234, 179, 8, 0.15);
+  background: rgba(16, 185, 129, 0.1);
+  color: #059669;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 /* ─── Scrollbar ───────────────────────────────────────── */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 99px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: #f0fdf4; }
+::-webkit-scrollbar-thumb { background: rgba(16, 185, 129, 0.25); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(16, 185, 129, 0.5); }
