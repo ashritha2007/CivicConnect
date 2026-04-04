@@ -71,59 +71,59 @@ const NewsCard: React.FC<{ news: any; index: number }> = ({ news, index }) => {
       initial={{ opacity: 0, y: 50, scale: 0.95 }}
       animate={isInView ? { opacity: 1, y: 0, scale: 1 } : {}}
       transition={{ duration: 0.8, delay: index * 0.1, ease: [0.22, 1, 0.36, 1] }}
-      className={`block cursor-pointer group relative rounded-[2.5rem] overflow-hidden border bg-[#050505] transition-all hover:bg-[#0a0a0a] ${
-        news.severity === 'critical' ? 'border-green-600/30 shadow-[0_0_40px_rgba(34,197,94,0.1)]' : 'border-white/10 shadow-2xl'
+      className={`block cursor-pointer group relative rounded-[2.5rem] overflow-hidden border bg-white transition-all hover:bg-slate-50 ${
+        news.severity === 'critical' ? 'border-emerald-200 shadow-[0_4px_20px_rgba(16,185,129,0.15)]' : 'border-slate-200 shadow-xl'
       }`}
     >
-      <div className="h-64 overflow-hidden relative">
+      <div className="h-64 overflow-hidden relative border-b border-slate-100">
         <img
           src={news.image}
           alt={news.title}
-          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000 grayscale-[0.5] group-hover:grayscale-0"
+          className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-1000 grayscale-[0.2] group-hover:grayscale-0"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-[#050505]/40 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
         
         <div className="absolute top-6 left-6 z-10 flex gap-2">
-          <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 backdrop-blur-md border ${
-            news.severity === 'critical' ? 'bg-green-600/20 border-green-500/30 text-green-500' : 'bg-black/50 border-white/20 text-white'
+          <div className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest flex items-center gap-2 backdrop-blur-md shadow-sm border ${
+            news.severity === 'critical' ? 'bg-emerald-500 text-white border-emerald-400' : 'bg-white/90 border-slate-200 text-slate-800'
           }`}>
             {news.severity === 'critical' ? <Skull className="w-3 h-3" /> : <Activity className="w-3 h-3" />}
             {news.severity.toUpperCase()}
           </div>
-          <div className="px-4 py-1.5 rounded-full bg-black/50 border border-white/20 text-[10px] font-bold uppercase tracking-widest text-slate-300 backdrop-blur-md">
+          <div className="px-4 py-1.5 rounded-full bg-white/90 border border-slate-200 text-[10px] font-bold uppercase tracking-widest text-slate-700 backdrop-blur-md shadow-sm">
             {news.category}
           </div>
         </div>
 
         <div className="absolute bottom-6 left-6 right-6 z-10">
-          <div className="flex items-center gap-2 text-green-500 font-bold text-sm mb-2 drop-shadow-lg">
-             <Activity className="w-4 h-4 animate-pulse" />
+          <div className="flex items-center gap-2 text-white font-bold text-sm mb-2 drop-shadow-md">
+             <Activity className="w-4 h-4 animate-pulse text-emerald-400" />
              {news.impact}
           </div>
         </div>
       </div>
 
       <div className="p-8 flex flex-col h-full">
-        <div className="flex items-center justify-between text-xs text-slate-500 font-bold uppercase tracking-widest mb-4">
+        <div className="flex items-center justify-between text-xs text-slate-400 font-bold uppercase tracking-widest mb-4">
           <span>{news.source}</span>
           <span>{news.date}</span>
         </div>
         
-        <h4 className="text-2xl font-bold text-white mb-4 leading-tight group-hover:text-green-500 transition-colors">
+        <h4 className="text-2xl font-bold text-slate-900 mb-4 leading-tight group-hover:text-emerald-600 transition-colors">
           {news.title}
         </h4>
         
-        <p className="text-slate-400 text-sm leading-relaxed mb-6 flex-1">
+        <p className="text-slate-600 text-sm leading-relaxed mb-6 flex-1">
           {news.description}
         </p>
         
-        <div className="pt-6 border-t border-white/5 mt-auto flex items-center justify-between">
+        <div className="pt-6 border-t border-slate-100 mt-auto flex items-center justify-between">
           <span
-            className="flex items-center gap-2 text-xs font-bold text-slate-400 group-hover:text-white transition-colors group/link"
+            className="flex items-center gap-2 text-xs font-bold text-slate-500 group-hover:text-emerald-600 transition-colors group/link"
           >
             DOCUMENTED REPORT <ExternalLink className="w-3.5 h-3.5 group-hover/link:translate-x-1 group-hover/link:-translate-y-1 transition-transform" />
           </span>
-          <span className="text-slate-600 group-hover:text-white transition-colors">
+          <span className="text-slate-400 group-hover:text-emerald-600 transition-colors">
             <Info className="w-4 h-4" />
           </span>
         </div>
@@ -136,17 +136,17 @@ export const NewsLayer = () => {
   const containerRef = useRef(null);
   
   return (
-    <div ref={containerRef} className="w-full bg-[#050505] py-32 px-6 border-t border-white/5 relative overflow-hidden">
+    <div ref={containerRef} className="w-full bg-emerald-50 py-32 px-6 border-t border-emerald-100 relative overflow-hidden">
       {/* Background Decorative Elements */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-green-500/20 to-transparent" />
-      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-green-600/5 blur-[120px] rounded-full -mr-64 -mt-64" />
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-px bg-gradient-to-r from-transparent via-emerald-300/50 to-transparent" />
+      <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-emerald-200/30 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
 
       <div className="max-w-7xl mx-auto relative z-10 text-center mb-20">
         <motion.div
            initial={{ opacity: 0, y: 20 }}
            whileInView={{ opacity: 1, y: 0 }}
            viewport={{ once: true }}
-           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-bold uppercase tracking-widest mb-6"
+           className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-100 border border-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-widest mb-6 shadow-sm"
         >
           <AlertTriangle className="w-4 h-4" /> Critical Civic Awareness Radar
         </motion.div>
@@ -156,9 +156,9 @@ export const NewsLayer = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.1 }}
-          className="text-5xl md:text-7xl font-bold text-white tracking-tighter mb-6"
+          className="text-5xl md:text-7xl font-bold text-slate-900 tracking-tighter mb-6"
         >
-          Community <span className="text-green-500" style={{ textShadow: '0 0 30px rgba(34,197,94,0.3)' }}>Impact.</span>
+          Community <span className="text-emerald-500" style={{ textShadow: '0 4px 20px rgba(16,185,129,0.3)' }}>Impact.</span>
         </motion.h2>
         
         <motion.p 
@@ -166,7 +166,7 @@ export const NewsLayer = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ delay: 0.2 }}
-          className="text-xl text-slate-400 max-w-2xl mx-auto font-medium"
+          className="text-xl text-slate-600 max-w-2xl mx-auto font-medium"
         >
           Documenting the real-world consequences of civic neglect. These aren't just statistics; they are reminders of why your voice matters.
         </motion.p>
@@ -179,9 +179,9 @@ export const NewsLayer = () => {
       </div>
 
       {/* Warning Footer */}
-      <div className="max-w-3xl mx-auto mt-24 p-8 rounded-3xl bg-green-600/5 border border-green-500/10 text-center">
-        <p className="text-green-400/60 text-xs font-bold uppercase tracking-[0.2em] mb-4">Urgent Call to Action</p>
-        <p className="text-slate-300 text-lg font-medium leading-relaxed italic">
+      <div className="max-w-3xl mx-auto mt-24 p-8 rounded-3xl bg-white border border-emerald-100 text-center shadow-lg">
+        <p className="text-emerald-600 text-xs font-bold uppercase tracking-[0.2em] mb-4">Urgent Call to Action</p>
+        <p className="text-slate-700 text-lg font-medium leading-relaxed italic">
           "The cost of inaction is too high. Every report you file could be a life saved."
         </p>
       </div>

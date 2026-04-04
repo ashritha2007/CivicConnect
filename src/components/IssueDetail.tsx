@@ -73,19 +73,15 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
 
 
   // Theme-aware accent colors
-  const accent = isAdmin ? 'red' : 'yellow';
+  const accent = 'green';
   const isCritical = issue.severity === 'critical';
-  const accentText = isCritical ? 'text-red-500' : isAdmin ? 'text-red-400' : 'text-yellow-400';
-  const accentText2 = isCritical ? 'text-red-600' : isAdmin ? 'text-red-500' : 'text-yellow-500';
+  const accentText = isCritical ? 'text-red-600' : 'text-emerald-600';
+  const accentText2 = isCritical ? 'text-red-700' : 'text-emerald-600';
   const topBar = isCritical 
-    ? 'bg-gradient-to-r from-red-800 via-red-500 to-red-800'
-    : isAdmin
-      ? 'bg-gradient-to-r from-red-700 via-red-500 to-red-700'
-      : 'bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600';
-  const sendBtn = isAdmin
-    ? 'bg-red-600 text-white hover:bg-red-500 shadow-red-500/10'
-    : 'bg-yellow-500 text-black hover:bg-yellow-400 shadow-yellow-500/10';
-  const inputFocus = isAdmin ? 'focus:border-red-500/50' : 'focus:border-yellow-500/50';
+    ? 'bg-gradient-to-r from-red-600 via-red-400 to-red-600'
+    : 'bg-gradient-to-r from-emerald-500 via-emerald-400 to-emerald-500';
+  const sendBtn = 'bg-emerald-500 text-white hover:bg-emerald-600 shadow-[0_4px_20px_rgba(16,185,129,0.2)]';
+  const inputFocus = 'focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100';
 
   return (
     <motion.div
@@ -99,15 +95,15 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
         animate={{ scale: 1, y: 0, opacity: 1 }}
         exit={{ scale: 0.95, y: 30, opacity: 0 }}
         transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-        className={`bg-[#080808] w-full max-w-6xl max-h-[92vh] rounded-[3.5rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border flex flex-col relative ${
-          isCritical ? 'border-red-600/30' : 'border-white/10'
+        className={`bg-white w-full max-w-6xl max-h-[92vh] rounded-[3.5rem] overflow-hidden shadow-2xl border flex flex-col relative ${
+          isCritical ? 'border-red-200' : 'border-emerald-100'
         }`}
       >
         {/* Accent top bar */}
         <div className={`absolute top-0 left-0 w-full h-1.5 ${topBar} ${isCritical ? 'animate-pulse' : ''}`} />
 
         {/* Header */}
-        <div className="p-10 border-b border-white/5 flex justify-between items-center bg-black/40 backdrop-blur-md sticky top-0 z-10">
+        <div className="p-10 border-b border-slate-100 flex justify-between items-center bg-white/90 backdrop-blur-md sticky top-0 z-10">
           <div className="max-w-[80%]">
             <div className="flex items-center gap-3 mb-3">
               <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
@@ -116,30 +112,30 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                 {isCritical ? 'CRITICAL ALERT' : issue.status.replace('_', ' ')}
               </span>
               {(issue.is_high_priority || isCritical) && (
-                <span className={`${isCritical ? 'text-red-500 animate-bounce' : isAdmin ? 'text-red-500' : 'text-yellow-500'} text-[10px] font-bold uppercase tracking-widest flex items-center gap-2`}>
+                <span className={`${isCritical ? 'text-red-600 animate-bounce' : 'text-emerald-600'} text-[10px] font-bold uppercase tracking-widest flex items-center gap-2`}>
                   {isCritical ? <Skull className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
-                  {isCritical ? 'EXTREME FATALITY RISK' : isAdmin ? 'High Priority Case' : 'Urgent Community Support'}
+                  {isCritical ? 'EXTREME FATALITY RISK' : 'High Priority Case'}
                 </span>
               )}
             </div>
-            <h2 className={`text-4xl font-bold tracking-tighter ${isCritical ? 'text-white' : 'text-white'}`}>
+            <h2 className={`text-4xl font-bold tracking-tighter ${isCritical ? 'text-slate-900' : 'text-slate-900'}`}>
               {issue.title}
             </h2>
             <div className="flex flex-wrap items-center gap-6 mt-4 text-slate-500 text-xs font-bold uppercase tracking-wider">
-              <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+              <span className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 text-slate-700">
                 <MapPin className={`w-4 h-4 ${accentText2}`} /> {issue.locality}, {issue.district}
               </span>
-              <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+              <span className="flex items-center gap-2 bg-emerald-50 px-3 py-1.5 rounded-xl border border-emerald-100 text-slate-700">
                 <Calendar className={`w-4 h-4 ${accentText2}`} /> {format(new Date(issue.createdAt || issue.created_at), 'PPP')}
               </span>
               {issue.assigned_corporation && (
-                <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 text-slate-300">
+                <span className="flex items-center gap-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 text-slate-600">
                   <Building2 className={`w-4 h-4 ${accentText2}`} /> {issue.assigned_corporation}
                 </span>
               )}
             </div>
           </div>
-          <button onClick={onClose} className="p-5 bg-white/5 hover:bg-red-500/10 rounded-[2rem] transition-all border border-white/5 group active:scale-95">
+          <button onClick={onClose} className="p-5 bg-slate-50 hover:bg-slate-100 rounded-[2rem] transition-all border border-slate-200 group active:scale-95">
             <X className="w-7 h-7 text-slate-400 group-hover:text-red-500 transition-colors" />
           </button>
         </div>
@@ -150,13 +146,13 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
             {/* Left column */}
             <div className="lg:col-span-3 space-y-10">
               {issue.photo_url && (
-                <div className="rounded-[2.5rem] overflow-hidden border border-white/10 shadow-2xl">
+                <div className="rounded-[2.5rem] overflow-hidden border border-slate-200 shadow-md">
                   <img src={issue.photo_url} className="w-full object-cover" alt="Issue" />
                 </div>
               )}
               <div className="space-y-4">
                 <h4 className={`text-xs font-bold uppercase tracking-widest ${accentText2}`}>Problem Description</h4>
-                <p className="text-slate-300 text-lg leading-relaxed">{issue.description}</p>
+                <p className="text-slate-700 text-lg leading-relaxed">{issue.description}</p>
               </div>
 
               {!isAdmin && issue.status === 'resolved' && (
@@ -176,16 +172,16 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
               )}
 
               {isAdmin && (
-                <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 space-y-6">
-                  <h4 className="text-sm font-bold text-slate-400 flex items-center gap-3 uppercase tracking-widest">
-                    <Landmark className="w-5 h-5 text-red-500" /> Corporation Management
+                <div className="p-8 rounded-[2.5rem] bg-white border border-slate-200 shadow-sm space-y-6">
+                  <h4 className="text-sm font-bold text-slate-500 flex items-center gap-3 uppercase tracking-widest">
+                    <Landmark className="w-5 h-5 text-emerald-500" /> Corporation Management
                   </h4>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-3">
-                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Assign Agency <span className="text-red-500">*</span></p>
+                      <p className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Assign Agency <span className="text-emerald-500">*</span></p>
                       <select
                         disabled={updating}
-                        className="w-full bg-black/40 border border-white/10 px-4 py-3 rounded-xl text-sm outline-none focus:border-red-500/50 transition-all text-white disabled:opacity-50"
+                        className="w-full bg-slate-50 border border-slate-200 px-4 py-3 rounded-xl text-sm outline-none transition-all text-slate-800 disabled:opacity-50 focus:ring-2 focus:ring-emerald-100 focus:border-emerald-400"
                         value={issue.assigned_corporation || ''}
                         onChange={(e) => handleAssignCorporation(e.target.value)}
                       >
@@ -198,9 +194,9 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                     </div>
                     <div className="space-y-2">
                       <p className="text-xs font-bold text-slate-500 uppercase tracking-widest ml-1">Current Handling</p>
-                      <div className="bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-3 flex items-center gap-2">
-                        <ShieldCheck className="w-4 h-4 text-red-500" />
-                        <span className="text-red-400 font-bold text-sm">{issue.assigned_corporation || 'None'}</span>
+                      <div className="bg-emerald-50 border border-emerald-200 rounded-xl px-4 py-3 flex items-center gap-2">
+                        <ShieldCheck className="w-4 h-4 text-emerald-500" />
+                        <span className="text-emerald-700 font-bold text-sm">{issue.assigned_corporation || 'None'}</span>
                       </div>
                     </div>
                   </div>
@@ -210,7 +206,7 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                       <button
                         disabled={updating}
                         onClick={() => updateStatus('in_progress')}
-                        className="px-4 py-2 bg-red-500/10 text-red-400 border border-red-500/20 rounded-lg text-xs font-bold hover:bg-red-500 hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="px-4 py-2 bg-amber-50 text-amber-600 border border-amber-200 rounded-lg text-xs font-bold hover:bg-amber-500 hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
                       >
                         {updating ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
                         Start Work
@@ -220,7 +216,7 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                       <button
                         disabled={updating}
                         onClick={() => updateStatus('resolved')}
-                        className="px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-lg text-xs font-bold hover:bg-emerald-500 hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
+                        className="px-4 py-2 bg-emerald-50 text-emerald-600 border border-emerald-200 rounded-lg text-xs font-bold hover:bg-emerald-600 hover:text-white transition-all disabled:opacity-50 flex items-center gap-2"
                       >
                         {updating ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
                         Mark Resolved
@@ -238,17 +234,17 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                 <h4 className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 ${accentText}`}>
                   <Clock className="w-4 h-4" /> Progress Timeline
                 </h4>
-                <div className="space-y-8 relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-white/10">
+                <div className="space-y-8 relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-px before:bg-slate-200">
                   {timeline.map((item: any) => (
                     <div key={item.id} className="relative pl-10">
                       <div
-                        className={`absolute left-0 top-1 w-8 h-8 rounded-full border-4 border-[#0c0c0c] shadow-lg ${item.status === 'resolved' ? 'bg-emerald-500' : item.status === 'in_progress' ? 'bg-orange-500' : 'bg-red-500'
+                        className={`absolute left-0 top-1 w-8 h-8 rounded-full border-4 border-white shadow-lg ${item.status === 'resolved' ? 'bg-emerald-500' : item.status === 'in_progress' ? 'bg-amber-500' : 'bg-red-500'
                           }`}
                       />
-                      <p className="text-sm font-bold text-white uppercase tracking-tight">{item.status.replace('_', ' ')}</p>
+                      <p className="text-sm font-bold text-slate-900 uppercase tracking-tight">{item.status.replace('_', ' ')}</p>
                       <p className="text-[10px] text-slate-500 font-medium">{format(new Date(item.createdAt || item.created_at), 'PPP p')}</p>
                       {item.note && (
-                        <p className="text-sm text-slate-400 mt-2 bg-white/5 p-3 rounded-xl border border-white/5 italic">"{item.note}"</p>
+                        <p className="text-sm text-slate-600 mt-2 bg-slate-50 p-3 rounded-xl border border-slate-100 italic">"{item.note}"</p>
                       )}
                     </div>
                   ))}
@@ -267,17 +263,17 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                       className={`p-5 rounded-2xl text-sm ${c.user_role === 'admin' ? 'ml-6' : ''} border`}
                       style={
                         c.user_role === 'admin'
-                          ? { background: isAdmin ? 'rgba(239,68,68,0.05)' : 'rgba(234,179,8,0.05)', borderColor: isAdmin ? 'rgba(239,68,68,0.12)' : 'rgba(234,179,8,0.12)' }
-                          : { background: 'rgba(255,255,255,0.03)', borderColor: 'rgba(255,255,255,0.06)' }
+                          ? { background: '#f0fdf4', borderColor: '#bbf7d0' }
+                          : { background: '#f8fafc', borderColor: '#f1f5f9' }
                       }
                     >
                       <div className="flex justify-between items-center mb-2">
-                        <span className={`text-[10px] font-bold uppercase tracking-widest ${c.user_role === 'admin' ? (isAdmin ? 'text-red-400' : 'text-yellow-500') : 'text-yellow-500'}`}>
+                        <span className={`text-[10px] font-bold uppercase tracking-widest ${c.user_role === 'admin' ? 'text-emerald-600' : 'text-emerald-600'}`}>
                           {c.user_role}
                         </span>
-                        <span className="text-[10px] text-slate-600 font-mono">{format(new Date(c.createdAt || c.created_at), 'p')}</span>
+                        <span className="text-[10px] text-slate-400 font-mono">{format(new Date(c.createdAt || c.created_at), 'p')}</span>
                       </div>
-                      <p className="text-slate-300 leading-relaxed">{c.text}</p>
+                      <p className="text-slate-800 leading-relaxed">{c.text}</p>
                     </div>
                   ))}
 
@@ -286,7 +282,7 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                   <input
                     type="text"
                     placeholder="Contribute to discussion..."
-                    className={`flex-1 bg-white/5 border border-white/10 px-5 py-4 rounded-2xl text-sm outline-none transition-all text-white ${inputFocus}`}
+                    className={`flex-1 bg-slate-50 border border-slate-200 px-5 py-4 rounded-2xl text-sm outline-none transition-all text-slate-800 placeholder:text-slate-400 ${inputFocus}`}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                   />

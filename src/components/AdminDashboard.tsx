@@ -80,7 +80,7 @@ export const AdminDashboard: React.FC<{ user?: any, corporation?: string }> = ({
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Assigned" value={stats.total} icon={TrendingUp} color="bg-red-500" delay={0.1} />
+        <StatCard title="Total Assigned" value={stats.total} icon={TrendingUp} color="bg-emerald-500" delay={0.1} />
         <StatCard title="Not Started" value={stats.total - stats.resolved - stats.pending} icon={AlertTriangle} color="bg-slate-500" delay={0.2} />
         <StatCard title="In Progress" value={stats.pending} icon={Clock} color="bg-amber-500" delay={0.3} />
         <StatCard title="Completed" value={stats.resolved} icon={CheckCircle2} color="bg-emerald-500" delay={0.4} />

@@ -52,9 +52,9 @@ export const MapPicker: React.FC<MapPickerProps> = ({ onLocationSelect, initialP
   const [position, setPosition] = useState<[number, number] | null>(initialPos || null);
 
   return (
-    <div className="h-64 w-full rounded-xl overflow-hidden border border-white/10 relative group">
+    <div className="h-64 w-full rounded-xl overflow-hidden border border-slate-200 shadow-sm relative group bg-white">
       <div className="absolute top-4 right-4 z-[1000] opacity-0 group-hover:opacity-100 transition-opacity">
-        <div className="bg-black/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 text-[10px] font-bold text-red-500 uppercase tracking-widest">
+        <div className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-200 shadow-md text-[10px] font-bold text-red-600 uppercase tracking-widest">
           Click map to pin location
         </div>
       </div>
@@ -75,7 +75,7 @@ interface HeatMapProps {
 
 export const HeatMap: React.FC<HeatMapProps> = ({ issues }) => {
   return (
-    <div className="h-[500px] w-full rounded-[2rem] overflow-hidden border border-white/5">
+    <div className="h-[500px] w-full rounded-[2rem] overflow-hidden border border-slate-200 shadow-xl bg-white">
       <MapContainer center={[17.6868, 83.2185]} zoom={12} scrollWheelZoom={true} style={{ height: '100%', width: '100%' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

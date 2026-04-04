@@ -36,14 +36,8 @@ type Theme = 'landing' | 'user' | 'admin';
 
 // ─── Nav Item ──────────────────────────────────────────────────────────────---
 const NavItem = ({ icon: Icon, label, active, onClick, theme }: any) => {
-  const activeClass =
-    theme === 'admin'
-      ? 'bg-red-600 text-white shadow-[0_0_20px_rgba(239,68,68,0.3)]'
-      : 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]';
-  const hoverClass =
-    theme === 'admin'
-      ? 'hover:text-red-600 hover:bg-red-50'
-      : 'hover:text-emerald-600 hover:bg-emerald-50';
+  const activeClass = 'bg-emerald-500 text-white shadow-[0_0_20px_rgba(16,185,129,0.3)]';
+  const hoverClass = 'hover:text-emerald-600 hover:bg-emerald-50';
   return (
     <button
       onClick={onClick}
@@ -66,7 +60,7 @@ const LandingPage = ({ setView }: { setView: (v: View) => void }) => (
   >
     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-green-500/10 blur-[150px] rounded-full -z-10" />
     <div className="absolute top-20 left-20 w-80 h-80 bg-green-700/5 blur-[100px] rounded-full -z-10" />
-    <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-red-600/5 blur-[120px] rounded-full -z-10" />
+    <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-emerald-400/5 blur-[120px] rounded-full -z-10" />
 
     <motion.div
       initial={{ y: 30, opacity: 0 }}
@@ -79,8 +73,8 @@ const LandingPage = ({ setView }: { setView: (v: View) => void }) => (
         <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
         Join the Civic Revolution
       </div>
-      <h2 className="text-7xl md:text-9xl font-bold text-white tracking-tighter leading-[0.9]">
-        Your Voice, <br />
+      <h2 className="text-7xl md:text-9xl font-bold tracking-tighter leading-[0.9]">
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600">Your Voice,</span> <br />
         <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600" style={{ textShadow: '0 0 50px rgba(74,222,128,0.3)' }}>Our Action.</span>
       </h2>
       <p className="text-xl md:text-3xl text-slate-400 font-medium max-w-3xl mx-auto leading-relaxed">
@@ -96,9 +90,9 @@ const LandingPage = ({ setView }: { setView: (v: View) => void }) => (
         </button>
         <button
           onClick={() => setView('admin-login')}
-          className="w-full sm:w-auto px-12 py-6 bg-white/5 text-white border border-white/10 rounded-full font-bold text-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3 active:scale-95"
+          className="w-full sm:w-auto px-12 py-6 bg-black/70 text-white border border-white/20 rounded-full font-bold text-xl hover:bg-black/85 transition-all flex items-center justify-center gap-3 active:scale-95"
         >
-          <Shield className="w-6 h-6 text-red-500" /> Admin Access
+          <Shield className="w-6 h-6 text-emerald-400" /> Admin Access
         </button>
       </div>
     </motion.div>
@@ -109,7 +103,7 @@ const LandingPage = ({ setView }: { setView: (v: View) => void }) => (
       transition={{ delay: 1.5 }}
       className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
     >
-      <p className="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em]">Scroll for Critical Alerts</p>
+      <p className="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em]">Scroll for Community Impact</p>
       <motion.div 
         animate={{ y: [0, 10, 0] }}
         transition={{ repeat: Infinity, duration: 2 }}
@@ -118,57 +112,69 @@ const LandingPage = ({ setView }: { setView: (v: View) => void }) => (
     </motion.div>
   </motion.div>
 
-  {/* Mission / Context Section */}
-  <div className="w-full bg-[#050505] py-32 px-6 border-y border-white/5 relative overflow-hidden">
-     <div className="max-w-4xl mx-auto text-center space-y-8">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          className="w-20 h-20 bg-red-600/10 border border-red-500/20 rounded-3xl mx-auto flex items-center justify-center mb-4"
-        >
-          <AlertTriangle className="w-10 h-10 text-red-500" />
-        </motion.div>
-        <motion.h3 
-          initial={{ opacity: 0, y: 20 }} 
-          whileInView={{ opacity: 1, y: 0 }} 
-          viewport={{ once: true }}
-          className="text-4xl md:text-5xl font-bold text-white tracking-tight"
-        >
-          Why CivicConnect <span className="text-red-500">Matters</span>
-        </motion.h3>
-        <motion.p 
-          initial={{ opacity: 0, y: 20 }} 
-          whileInView={{ opacity: 1, y: 0 }} 
-          viewport={{ once: true }}
-          transition={{ delay: 0.1 }}
-          className="text-xl text-slate-400 leading-relaxed font-medium"
-        >
-          Every year, thousands of lives are impacted by structural neglect, pothole-related accidents, and healthcare crises that could have been avoided with faster reporting and bureaucratic transparency. Our platform is dedicated to bridging that gap.
-        </motion.p>
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }} 
-          whileInView={{ opacity: 1, scale: 1 }} 
-          viewport={{ once: true }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10"
-        >
-           {[
-             { label: 'Fatalities Prevented', value: '12', icon: <Skull className="w-5 h-5" /> },
-             { label: 'Active Reports', value: '154', icon: <Megaphone className="w-5 h-5" /> },
-             { label: 'Resolved in Vizag', value: '42', icon: <CheckCircle2 className="w-5 h-5" /> }
-           ].map((stat, i) => (
-             <div key={i} className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5 flex flex-col items-center gap-2">
-                <div className="text-red-500 mb-2">{stat.icon}</div>
-                <div className="text-4xl font-black text-white">{stat.value}</div>
-                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{stat.label}</div>
-             </div>
-           ))}
-        </motion.div>
-     </div>
-  </div>
-  
   <NewsLayer />
+
+  {/* Why CivicConnect Matters — blended, no box */}
+  <div className="w-full py-28 px-6 relative overflow-hidden">
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[300px] bg-emerald-400/8 blur-[100px] rounded-full pointer-events-none" />
+    <div className="max-w-4xl mx-auto text-center space-y-8 relative z-10">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        whileInView={{ opacity: 1, scale: 1 }}
+        viewport={{ once: true }}
+        className="w-20 h-20 bg-emerald-500/10 rounded-3xl mx-auto flex items-center justify-center mb-4"
+      >
+        <AlertTriangle className="w-10 h-10 text-emerald-500" />
+      </motion.div>
+      <motion.h3 
+        initial={{ opacity: 0, y: 20 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }}
+        className="text-4xl md:text-5xl font-bold text-slate-800 tracking-tight"
+      >
+        Why CivicConnect <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-500 to-emerald-600">Matters</span>
+      </motion.h3>
+      <motion.p 
+        initial={{ opacity: 0, y: 20 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }}
+        transition={{ delay: 0.1 }}
+        className="text-xl text-slate-500 leading-relaxed font-medium max-w-3xl mx-auto"
+      >
+        Every year, thousands of lives are impacted by structural neglect, pothole-related accidents, and healthcare crises that could have been avoided with faster reporting and bureaucratic transparency. Our platform is dedicated to bridging that gap.
+      </motion.p>
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }} 
+        whileInView={{ opacity: 1, y: 0 }} 
+        viewport={{ once: true }}
+        transition={{ delay: 0.2 }}
+        className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-10"
+      >
+        {[
+          { label: 'Fatalities Prevented', value: '12', icon: <Skull className="w-6 h-6" /> },
+          { label: 'Active Reports', value: '154', icon: <Megaphone className="w-6 h-6" /> },
+          { label: 'Resolved in Vizag', value: '42', icon: <CheckCircle2 className="w-6 h-6" /> }
+        ].map((stat, i) => (
+          <div key={i} className="flex flex-col items-center gap-3 py-2">
+            <div className="text-emerald-500 mb-1">{stat.icon}</div>
+            <div className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-b from-emerald-600 to-emerald-800">{stat.value}</div>
+            <div className="text-xs font-bold uppercase tracking-widest text-slate-400">{stat.label}</div>
+          </div>
+        ))}
+      </motion.div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        whileInView={{ opacity: 1 }}
+        viewport={{ once: true }}
+        transition={{ delay: 0.3 }}
+        className="flex justify-center gap-8 pt-4"
+      >
+        <div className="h-px flex-1 max-w-xs bg-gradient-to-r from-transparent to-emerald-200" />
+        <div className="w-2 h-2 rounded-full bg-emerald-400 mt-[-3px]" />
+        <div className="h-px flex-1 max-w-xs bg-gradient-to-l from-transparent to-emerald-200" />
+      </motion.div>
+    </div>
+  </div>
   </>
 );
 
@@ -185,19 +191,13 @@ const LoginForm = ({
   const [isSignUp, setIsSignUp] = useState(false);
 
   const isAdmin = role === 'admin';
-  const accentBorder = isAdmin ? 'border-red-100' : 'border-emerald-100';
-  const accentGlow = isAdmin
-    ? '0 8px 40px rgba(239,68,68,0.06)'
-    : '0 8px 40px rgba(16,185,129,0.08)';
-  const activeTabClass = isAdmin
-    ? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
-    : 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20';
-  const submitClass = isAdmin
-    ? 'bg-red-600 hover:bg-red-700 text-white shadow-[0_4px_20px_rgba(239,68,68,0.2)]'
-    : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_4px_20px_rgba(16,185,129,0.2)]';
-  const iconColor = isAdmin ? 'text-red-500' : 'text-emerald-500';
-  const iconBg = isAdmin ? 'bg-red-50 border-red-100' : 'bg-emerald-50 border-emerald-100';
-  const focusBorder = isAdmin ? 'focus:border-red-400 focus:ring-2 focus:ring-red-100' : 'focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100';
+  const accentBorder = 'border-emerald-100';
+  const accentGlow = '0 8px 40px rgba(16,185,129,0.08)';
+  const activeTabClass = 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20';
+  const submitClass = 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-[0_4px_20px_rgba(16,185,129,0.2)]';
+  const iconColor = 'text-emerald-500';
+  const iconBg = 'bg-emerald-50 border-emerald-100';
+  const focusBorder = 'focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100';
 
   return (
     <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="max-w-md mx-auto mt-12">
@@ -504,30 +504,13 @@ export default function App() {
     setView('landing');
   };
 
-  // Colors per theme
-  const logoGlow =
-    theme === 'admin'
-      ? 'bg-red-600 shadow-[0_0_20px_rgba(239,68,68,0.4)]'
-      : 'bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]';
-
-  const accentText =
-    theme === 'admin' ? 'text-red-600' : 'text-emerald-600';
-
-  const roleTextColor =
-    theme === 'admin' ? 'text-red-500' : 'text-emerald-600';
-
-  const avatarBg =
-    theme === 'admin'
-      ? 'bg-red-50 border-red-200 text-red-600'
-      : 'bg-emerald-50 border-emerald-200 text-emerald-700';
-
-  const headerBg =
-    theme === 'admin'
-      ? 'bg-white/95 border-red-100 shadow-[0_1px_20px_rgba(239,68,68,0.06)]'
-      : 'bg-white/95 border-emerald-100 shadow-[0_1px_20px_rgba(16,185,129,0.06)]';
-
-  const rootBg =
-    theme === 'admin' ? 'bg-red-50/30' : 'bg-[#f0fdf4]';
+  // Colors per theme — unified green theme across all roles
+  const logoGlow = 'bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.4)]';
+  const accentText = 'text-emerald-600';
+  const roleTextColor = 'text-emerald-600';
+  const avatarBg = 'bg-emerald-50 border-emerald-200 text-emerald-700';
+  const headerBg = 'bg-white/95 border-emerald-100 shadow-[0_1px_20px_rgba(16,185,129,0.06)]';
+  const rootBg = 'bg-[#f0fdf4]';
 
   return (
     <div className={`min-h-screen ${rootBg} theme-${theme} flex flex-col selection:bg-white/20`}>
@@ -542,7 +525,7 @@ export default function App() {
             <div className={`w-12 h-12 rounded-2xl flex items-center justify-center group-hover:rotate-6 transition-transform ${logoGlow}`}>
               <Megaphone className="w-7 h-7 text-black" />
             </div>
-            <h1 className="text-2xl font-bold text-white tracking-tight">
+            <h1 className="text-2xl font-bold text-slate-800 tracking-tight">
               Civic<span className={accentText}>Connect</span>
             </h1>
           </div>
@@ -562,7 +545,7 @@ export default function App() {
                 <div className="w-px h-8 bg-white/10 mx-3" />
                 <div className="flex items-center gap-4 pl-2">
                   <div className="flex flex-col items-end">
-                    <p className="text-sm font-bold text-white leading-tight">{user.email.split('@')[0]}</p>
+                    <p className="text-sm font-bold text-slate-800 leading-tight">{user.email.split('@')[0]}</p>
                     <p className={`text-[10px] font-bold uppercase tracking-widest ${roleTextColor}`}>{user.role}</p>
                   </div>
                   <div className="relative group/profile">
@@ -588,13 +571,13 @@ export default function App() {
               <div className="flex items-center gap-3">
                 <button
                   onClick={() => setView('user-login')}
-                  className="px-6 py-2.5 text-slate-400 font-bold hover:text-green-400 transition-all"
+                  className="px-6 py-2.5 text-slate-700 font-bold hover:text-emerald-600 transition-all"
                 >
                   Citizen Login
                 </button>
                 <button
                   onClick={() => setView('admin-login')}
-                  className="flex items-center gap-2 px-6 py-2.5 bg-white/5 text-white border border-white/10 rounded-2xl font-bold hover:bg-white/10 transition-all"
+                  className="flex items-center gap-2 px-6 py-2.5 bg-emerald-50 text-slate-800 border border-emerald-200 rounded-2xl font-bold hover:bg-emerald-100 transition-all"
                 >
                   <Shield className="w-4 h-4 text-red-400" /> Admin
                 </button>
@@ -636,7 +619,7 @@ export default function App() {
                         {user.email[0].toUpperCase()}
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-white">{user.email.split('@')[0]}</p>
+                        <p className="text-sm font-bold text-slate-800">{user.email.split('@')[0]}</p>
                         <p className={`text-[10px] font-bold uppercase tracking-widest ${roleTextColor}`}>{user.role}</p>
                       </div>
                     </div>

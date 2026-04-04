@@ -6,13 +6,13 @@ import confetti from 'canvas-confetti';
 
 const Input = ({ label, icon: Icon, readOnly, ...props }: any) => (
   <div className="space-y-2">
-    <label className="text-xs font-bold text-yellow-500 uppercase tracking-widest ml-1">{label} <span className="text-red-500">*</span></label>
+    <label className="text-xs font-bold text-emerald-600 uppercase tracking-widest ml-1">{label} <span className="text-red-500">*</span></label>
     <div className="relative">
-      {Icon && <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />}
+      {Icon && <Icon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />}
       <input
         {...props}
         readOnly={readOnly}
-        className={`w-full bg-white/5 border border-white/10 ${Icon ? 'pl-12' : 'px-4'} pr-4 py-4 rounded-2xl outline-none focus:border-yellow-500/50 focus:ring-4 focus:ring-yellow-500/10 transition-all text-white placeholder:text-slate-600 block`}
+        className={`w-full bg-slate-50 border border-slate-200 ${Icon ? 'pl-12' : 'px-4'} pr-4 py-4 rounded-2xl outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all text-slate-800 placeholder:text-slate-400 block`}
       />
     </div>
   </div>
@@ -85,7 +85,7 @@ export const IssueReportForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess
 
         const successMsg = document.createElement('div');
         successMsg.className =
-          'fixed top-24 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-8 py-4 rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.5)] border border-yellow-400 z-[100] font-bold animate-bounce';
+          'fixed top-24 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-8 py-4 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.5)] border border-emerald-400 z-[100] font-bold animate-bounce';
         successMsg.innerText = 'You\'re a Civic Saviour! Report Submitted Successfully!';
         document.body.appendChild(successMsg);
 
@@ -133,18 +133,18 @@ export const IssueReportForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess
   return (
     <form
       onSubmit={handleSubmit}
-      className="user-glow-card p-8 md:p-12 rounded-[2.5rem] space-y-10 relative overflow-hidden"
+      className="bg-white p-8 md:p-12 rounded-[2.5rem] space-y-10 relative overflow-hidden shadow-2xl border border-emerald-100"
     >
-      <div className="absolute top-0 right-0 w-64 h-64 bg-yellow-500/5 blur-3xl -mr-32 -mt-32 pointer-events-none" />
+      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 blur-3xl -mr-32 -mt-32 pointer-events-none" />
 
       <div className="relative z-10">
-        <h2 className="text-4xl font-bold text-white tracking-tight flex items-center gap-4">
-          <div className="p-3 bg-yellow-500/10 rounded-2xl border border-yellow-500/20">
-            <Megaphone className="w-8 h-8 text-yellow-400" />
+        <h2 className="text-4xl font-bold text-slate-900 tracking-tight flex items-center gap-4">
+          <div className="p-3 bg-emerald-50 rounded-2xl border border-emerald-100">
+            <Megaphone className="w-8 h-8 text-emerald-500" />
           </div>
           Report Issue
         </h2>
-        <p className="text-slate-400 mt-3 text-lg">Help us identify and resolve community problems.</p>
+        <p className="text-slate-500 mt-3 text-lg">Help us identify and resolve community problems.</p>
       </div>
 
       <div className="space-y-8 relative z-10">
@@ -157,29 +157,29 @@ export const IssueReportForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess
             onChange={(e: any) => setFormData({ ...formData, title: e.target.value })}
           />
           <div className="space-y-2">
-            <label className="text-xs font-bold text-yellow-500 uppercase tracking-widest ml-1">Category <span className="text-red-500">*</span></label>
+            <label className="text-xs font-bold text-emerald-600 uppercase tracking-widest ml-1">Category <span className="text-red-500">*</span></label>
             <select
-              className="w-full bg-white/5 border border-white/10 px-4 py-4 rounded-2xl outline-none focus:border-yellow-500/50 focus:ring-4 focus:ring-yellow-500/10 transition-all text-white appearance-none"
+              className="w-full bg-slate-50 border border-slate-200 px-4 py-4 rounded-2xl outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all text-slate-800 appearance-none"
               value={formData.category}
               onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             >
-              <option className="bg-black">Roads</option>
-              <option className="bg-black">Sanitation</option>
-              <option className="bg-black">Water Supply</option>
-              <option className="bg-black">Electricity</option>
-              <option className="bg-black">Public Safety</option>
-              <option className="bg-black">Other</option>
+              <option>Roads</option>
+              <option>Sanitation</option>
+              <option>Water Supply</option>
+              <option>Electricity</option>
+              <option>Public Safety</option>
+              <option>Other</option>
             </select>
           </div>
         </div>
 
         <div className="space-y-2">
-          <label className="text-xs font-bold text-yellow-500 uppercase tracking-widest ml-1">Detailed Description <span className="text-red-500">*</span></label>
+          <label className="text-xs font-bold text-emerald-600 uppercase tracking-widest ml-1">Detailed Description <span className="text-red-500">*</span></label>
           <textarea
             required
             rows={4}
             placeholder="Provide as much detail as possible..."
-            className="w-full bg-white/5 border border-white/10 px-4 py-4 rounded-2xl outline-none focus:border-yellow-500/50 focus:ring-4 focus:ring-yellow-500/10 transition-all text-white placeholder:text-slate-600 resize-none block"
+            className="w-full bg-slate-50 border border-slate-200 px-4 py-4 rounded-2xl outline-none focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 transition-all text-slate-800 placeholder:text-slate-400 resize-none block"
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
           />
@@ -193,11 +193,11 @@ export const IssueReportForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess
 
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-bold text-yellow-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+            <label className="text-xs font-bold text-emerald-600 uppercase tracking-widest ml-1 flex items-center gap-2">
               <MapPin className="w-4 h-4" /> Pinpoint Location
             </label>
             {formData.latitude !== 0 && (
-              <span className="text-[10px] text-yellow-400 font-mono">
+              <span className="text-[10px] text-emerald-500 font-mono">
                 COORD: {formData.latitude.toFixed(4)}, {formData.longitude.toFixed(4)}
               </span>
             )}
@@ -206,7 +206,7 @@ export const IssueReportForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess
         </div>
 
         <div className="space-y-4">
-          <label className="text-xs font-bold text-yellow-500 uppercase tracking-widest ml-1 flex items-center gap-2">
+          <label className="text-xs font-bold text-emerald-600 uppercase tracking-widest ml-1 flex items-center gap-2">
             <Camera className="w-4 h-4" /> Visual Evidence <span className="text-red-500">*</span>
           </label>
           <div className="relative group">
@@ -216,12 +216,12 @@ export const IssueReportForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess
               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
               onChange={(e) => setPhoto(e.target.files?.[0] || null)}
             />
-            <div className="w-full py-12 border-2 border-dashed border-white/10 rounded-[2rem] flex flex-col items-center justify-center gap-3 group-hover:border-yellow-500/30 transition-all bg-white/5">
-              <div className="p-4 bg-yellow-500/10 rounded-full">
-                <Camera className="w-8 h-8 text-yellow-400" />
+            <div className="w-full py-12 border-2 border-dashed border-slate-200 rounded-[2rem] flex flex-col items-center justify-center gap-3 group-hover:border-emerald-400 transition-all bg-slate-50">
+              <div className="p-4 bg-emerald-50 rounded-full border border-emerald-100">
+                <Camera className="w-8 h-8 text-emerald-500" />
               </div>
-              <p className="text-slate-400 font-medium">{photo ? photo.name : 'Click or drag to upload photo'}</p>
-              <p className="text-slate-600 text-xs uppercase tracking-widest">Max size: 10MB</p>
+              <p className="text-slate-500 font-medium">{photo ? photo.name : 'Click or drag to upload photo'}</p>
+              <p className="text-slate-400 text-xs uppercase tracking-widest">Max size: 10MB</p>
             </div>
           </div>
         </div>
@@ -231,7 +231,7 @@ export const IssueReportForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess
         <button
           disabled={loading}
           type="submit"
-          className="w-full bg-yellow-500 text-black py-5 rounded-[2rem] font-bold hover:bg-yellow-400 transition-all shadow-[0_0_40px_rgba(234,179,8,0.2)] flex items-center justify-center gap-3 disabled:opacity-50 group"
+          className="w-full bg-emerald-500 text-white py-5 rounded-[2rem] font-bold hover:bg-emerald-600 transition-all shadow-[0_4px_20px_rgba(16,185,129,0.3)] flex items-center justify-center gap-3 disabled:opacity-50 group"
         >
           {loading ? (
             <Loader2 className="w-6 h-6 animate-spin" />
