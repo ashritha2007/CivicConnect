@@ -15,7 +15,11 @@ import {
   EyeOff,
   AlertTriangle,
   Skull,
-  CheckCircle2
+  CheckCircle2,
+  Building2,
+  Clock,
+  Zap,
+  ShieldAlert
 } from 'lucide-react';
 import { IssueReportForm } from './components/IssueReportForm';
 import { IssueList } from './components/IssueList';
@@ -308,6 +312,110 @@ const LoginForm = ({
         </div>
       </div>
     </motion.div>
+  );
+};
+
+// ─── Admin Portal Wrapper ──────────────────────────────────────────────────
+const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue: (id: number) => void }) => {
+  const [globalStats, setGlobalStats] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<'feed' | 'dashboard'>('dashboard');
+  const [activeCorp, setActiveCorp] = useState<string>('all'); // 'all', 'GVMC', 'VMRDA'
+
+  useEffect(() => {
+    // Fetch global stats for Hero (ignoring role filtering to get total system state)
+    fetch('/api/analytics').then(res => res.json()).then(setGlobalStats);
+  }, []);
+
+  const isAdmin = user?.role === 'superadmin';
+  // If not superadmin, restrict sidebar options somewhat or just let them view what they're allowed
+  // For demonstration, standard admins see their assigned corp.
+  
+  const corporations = [
+    { id: 'all', name: 'Global System Overview', icon: LayoutDashboard },
+    { id: 'GVMC', name: 'GVMC Operations', icon: Building2 },
+    { id: 'VMRDA', name: 'VMRDA Regional', icon: Building2 },
+    { id: 'EPDCL', name: 'EPDCL (Electrical)', icon: Zap },
+    { id: 'POLICE', name: 'City Police', icon: ShieldAlert }
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Global Hero Summary Section */}
+      <div className="relative p-8 rounded-[2.5rem] overflow-hidden" style={{ background: 'linear-gradient(135deg, rgba(30,0,0,0.92) 0%, rgba(8,0,0,0.96) 100%)', border: '1px solid rgba(239,68,68,0.22)' }}>
+        <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/10 blur-[120px] rounded-full -mr-48 -mt-48 pointer-events-none" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-900/10 blur-[80px] rounded-full -ml-32 -mb-32 pointer-events-none" />
+        
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+           <div>
+             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest mb-4">
+               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+               Central Monitoring System — Live
+             </div>
+             <h2 className="text-4xl font-bold text-white tracking-tighter">System <span style={{ color: '#ff2020' }}>Overview</span></h2>
+             <p className="text-slate-400 mt-2 text-sm max-w-lg">Real-time aggregation of all reported issues across all interconnected municipal corporations.</p>
+           </div>
+           
+           <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5">
+              <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'dashboard' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'text-slate-500 hover:text-white'}`}>Dashboards</button>
+              <button onClick={() => setActiveTab('feed')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'feed' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'text-slate-500 hover:text-white'}`}>Live Issue Feed</button>
+           </div>
+        </div>
+
+        {/* Global Metrics Row */}
+        {globalStats ? (
+          <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: 'Total Issues', value: globalStats.total, icon: AlertTriangle, color: 'text-red-500' },
+              { label: 'Resolved', value: globalStats.resolved, icon: CheckCircle2, color: 'text-emerald-500' },
+              { label: 'In Progress', value: globalStats.pending, icon: Clock, color: 'text-amber-500' },
+              { label: 'Not Started', value: globalStats.total - globalStats.resolved - globalStats.pending, icon: Shield, color: 'text-slate-400' }
+            ].map((stat, i) => (
+              <div key={i} className="bg-black/40 border border-white/10 rounded-2xl p-4 flex items-center gap-4">
+                 <div className={`p-3 rounded-xl bg-white/5 ${stat.color}`}><stat.icon className="w-5 h-5" /></div>
+                 <div>
+                   <p className="text-2xl font-bold text-white">{stat.value}</p>
+                   <p className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{stat.label}</p>
+                 </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="h-20 flex flex-col justify-center text-red-500/60 font-medium text-sm animate-pulse">Aggregating global telemetry...</div>
+        )}
+      </div>
+
+      {/* Main Two Column Layout for Dashboards */}
+      {activeTab === 'dashboard' && (
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Sidebar */}
+          <div className="lg:w-64 shrink-0 flex flex-col gap-2 bg-[#0d0d0d] border border-white/5 rounded-[2.5rem] p-4 h-fit">
+            <h3 className="text-xs font-bold uppercase tracking-widest text-slate-600 px-4 pt-2 pb-4">Dashboards</h3>
+            {corporations.map(corp => (
+               <button 
+                 key={corp.id} 
+                 onClick={() => setActiveCorp(corp.id)}
+                 className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all ${activeCorp === corp.id ? 'bg-red-500/10 border-red-500/20 text-red-400 shadow-[inset_0_0_20px_rgba(239,68,68,0.05)]' : 'border-transparent text-slate-400 hover:bg-white/5 hover:text-white'}`}
+               >
+                 <corp.icon className="w-4 h-4 shrink-0" />
+                 <span className="text-sm font-bold truncate">{corp.name}</span>
+               </button>
+            ))}
+          </div>
+          
+          {/* Dashboard Content */}
+          <div className="flex-1 min-w-0">
+             <AdminDashboard user={user} corporation={activeCorp} />
+          </div>
+        </div>
+      )}
+
+      {/* Live Feed fallback */}
+      {activeTab === 'feed' && (
+         <div className="bg-[#0d0d0d] border border-white/5 rounded-[2.5rem] p-6 lg:p-10">
+           <IssueList onSelect={onSelectIssue} isAdmin={true} userRole={user.role} />
+         </div>
+      )}
+    </div>
   );
 };
 
@@ -605,61 +713,7 @@ export default function App() {
 
         {/* Admin View (red theme) */}
         {view === 'admin' && (
-          <div className="space-y-12">
-            {/* Admin Header Panel */}
-            <div
-              className="relative p-8 rounded-[2.5rem] overflow-hidden"
-              style={{
-                background: 'linear-gradient(135deg, rgba(30,0,0,0.92) 0%, rgba(8,0,0,0.96) 100%)',
-                border: '1px solid rgba(239,68,68,0.22)',
-                boxShadow: '0 0 60px rgba(180,0,0,0.18), inset 0 1px 0 rgba(255,255,255,0.04)',
-              }}
-            >
-              <div className="absolute top-0 right-0 w-96 h-96 bg-red-600/10 blur-[120px] rounded-full -mr-48 -mt-48 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-900/10 blur-[80px] rounded-full -ml-32 -mb-32 pointer-events-none" />
-              <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/20 text-red-400 text-[10px] font-bold uppercase tracking-widest mb-4">
-                    <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-                    GVMC Admin Panel — Live
-                  </div>
-                  <h2 className="text-5xl font-bold text-white tracking-tighter">
-                    Command <span style={{ color: '#ff2020', textShadow: '0 0 30px rgba(255,50,50,0.55)' }}>Center</span>
-                  </h2>
-                  <p className="text-slate-400 mt-3 text-lg">Monitor, prioritize and resolve community issues across Vizag.</p>
-                </div>
-                <div className="flex flex-col items-end gap-3">
-                  <div className="flex bg-black/40 p-1.5 rounded-2xl border border-white/5">
-                    <button
-                      onClick={() => setAdminSubView('feed')}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${adminSubView === 'feed' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'text-slate-500 hover:text-white'}`}
-                    >
-                      Issue Feed
-                    </button>
-                    <button
-                      onClick={() => setAdminSubView('dashboard')}
-                      className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${adminSubView === 'dashboard' ? 'bg-red-500 text-white shadow-lg shadow-red-500/20' : 'text-slate-500 hover:text-white'}`}
-                    >
-                      Workload Analytics
-                    </button>
-                  </div>
-                  <div
-                    className="text-center px-4 py-2 rounded-xl"
-                    style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.15)' }}
-                  >
-                    <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest">Administrator</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {adminSubView === 'feed' ? (
-              <IssueList onSelect={(id) => setSelectedIssueId(id)} isAdmin={true} userRole={user?.role} />
-            ) : (
-              <AdminDashboard user={user} />
-            )}
-
-          </div>
+          <AdminPortalWrapper user={user} onSelectIssue={(id) => setSelectedIssueId(id)} />
         )}
 
         {/* Login pages */}

@@ -3,7 +3,7 @@ import { ThumbsUp, MapPin, AlertCircle, ChevronRight, Search, Flame, Skull } fro
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 
-interface Issue {
+export interface Issue {
   id: number;
   title: string;
   description: string;
@@ -27,7 +27,7 @@ interface IssueCardProps {
 
 const VOTE_HIGHLIGHT_THRESHOLD = 10;
 
-const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, onSelect, onVote }) => {
+export const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, onSelect, onVote }) => {
   const isHighVoted = issue.votes >= VOTE_HIGHLIGHT_THRESHOLD;
   const isCritical = issue.severity === 'critical';
 

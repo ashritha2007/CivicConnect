@@ -133,6 +133,18 @@ async function startServer() {
         }
       ];
 
+      const assignCorporation = (category: string) => {
+        const map: Record<string, string> = {
+          'Roads': 'GVMC',
+          'Sanitation': 'GVMC',
+          'Water Supply': 'GVMC',
+          'Electricity': 'EPDCL',
+          'Public Safety': 'POLICE',
+          'Infrastructure': 'VMRDA',
+        };
+        return map[category] || 'GVMC';
+      };
+
       for (const issueData of issues) {
         const newIssue = await Issue.create({
           title: issueData.title,
@@ -146,7 +158,7 @@ async function startServer() {
           status: issueData.status,
           votes: issueData.votes,
           is_high_priority: issueData.is_high_priority,
-          assigned_corporation: issueData.status !== 'not_started' ? 'GVMC' : null
+          assigned_corporation: assignCorporation(issueData.category)
         });
 
         const issueId = newIssue._id;
@@ -294,6 +306,12 @@ async function startServer() {
     if (roleQuery === 'gvmc_admin') filteredIssues = issues.filter(i => i.assigned_corporation === 'GVMC' || i.assigned_corporation === null);
     if (roleQuery === 'vmrda_admin') filteredIssues = issues.filter(i => i.assigned_corporation === 'VMRDA' || i.assigned_corporation === null);
 
+    // Strict filtering by corporation if requested by Dashboards
+    const corporationQuery = req.query.corporation;
+    if (corporationQuery) {
+      filteredIssues = filteredIssues.filter(i => i.assigned_corporation === corporationQuery);
+    }
+
     // Map _id to id and add created_at/updated_at aliases for frontend compatibility
     const formattedIssues = filteredIssues.map(issue => {
       const obj: any = issue.toObject();
@@ -321,9 +339,21 @@ async function startServer() {
         } catch(e) {}
       }
 
+      const assignCorporation = (categoryName: string) => {
+        const map: Record<string, string> = {
+          'Roads': 'GVMC',
+          'Sanitation': 'GVMC',
+          'Water Supply': 'GVMC',
+          'Electricity': 'EPDCL',
+          'Public Safety': 'POLICE',
+          'Infrastructure': 'VMRDA',
+        };
+        return map[categoryName] || 'GVMC';
+      };
+
       const newIssue = await Issue.create({
         title, description, category, state, district, locality, latitude, longitude, photo_url, 
-        assigned_corporation: null, confidence_score, ai_category
+        assigned_corporation: assignCorporation(category), confidence_score, ai_category
       });
 
       if (userId) {
@@ -442,9 +472,15 @@ async function startServer() {
   app.get("/api/analytics", async (req, res) => {
     try {
       const roleQuery = req.query.role as string;
+      const corporationQuery = req.query.corporation as string;
       const matchQuery: any = {};
       if (roleQuery === 'gvmc_admin') matchQuery.assigned_corporation = { $in: ['GVMC', null] };
       if (roleQuery === 'vmrda_admin') matchQuery.assigned_corporation = { $in: ['VMRDA', null] };
+      
+      // Strict filtering by exact corporation if requested
+      if (corporationQuery) {
+        matchQuery.assigned_corporation = corporationQuery;
+      }
 
       const total = await Issue.countDocuments(matchQuery);
       const resolved = await Issue.countDocuments({ ...matchQuery, status: 'resolved' });
