@@ -8,7 +8,11 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const JWT_SECRET = process.env.JWT_SECRET || "civic-connect-secret-key";
-const MONGODB_URI = process.env.MONGODB_URI!;
+const MONGODB_URI = process.env.MONGODB_URI;
+
+if (!MONGODB_URI) {
+    console.error("❌ MONGODB_URI environment variable is not set. Please add it in Vercel Project Settings → Environment Variables.");
+}
 
 // ─── DB MODELS (Inlined for Vercel Stability) ──────────────────────────────
 const UserSchema = new Schema({
@@ -62,6 +66,11 @@ const Timeline = mongoose.models.Timeline || mongoose.model('Timeline', Timeline
 let isConnected = false;
 const connectDB = async () => {
     if (isConnected) return;
+    if (!MONGODB_URI) {
+        throw new Error(
+            'MONGODB_URI is not configured. Go to your Vercel project → Settings → Environment Variables and add MONGODB_URI with your MongoDB Atlas connection string.'
+        );
+    }
     await mongoose.connect(MONGODB_URI);
     isConnected = true;
 };
