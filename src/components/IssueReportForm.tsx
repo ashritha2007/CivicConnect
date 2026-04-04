@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Camera, MapPin, Send, Loader2, Megaphone } from 'lucide-react';
 import { MapPicker } from './MapComponents';
+import { mlService } from '../utils/ml-service';
+import confetti from 'canvas-confetti';
 
 const Input = ({ label, icon: Icon, readOnly, ...props }: any) => (
   <div className="space-y-2">
@@ -41,12 +43,32 @@ export const IssueReportForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess
       return;
     }
 
+    if (!photo) {
+      alert('Visual Evidence is mandatory. Please upload an image.');
+      return;
+    }
+
     setLoading(true);
+    
+    // Phase 3: ML Validation Layer
+    const qualityCheck = await mlService.validateImageQuality(photo);
+    if (!qualityCheck.isValid) {
+      setLoading(false);
+      alert(qualityCheck.reason || "Unclear Information Provided");
+      return;
+    }
+
+    // Phase 3: Automated Classification
+    const aiClassification = await mlService.classifyIssue(formData.title, formData.description);
+
     const data = new FormData();
     const submissionData = {
       ...formData,
+      category: aiClassification.confidence > 85 ? aiClassification.category : formData.category, // Auto-route if high confidence
       latitude: Number(formData.latitude),
       longitude: Number(formData.longitude),
+      confidence_score: aiClassification.confidence,
+      ai_category: aiClassification.category
     };
     Object.entries(submissionData).forEach(([key, value]) => data.append(key, value.toString()));
     if (photo) data.append('photo', photo);
@@ -54,10 +76,17 @@ export const IssueReportForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess
     try {
       const res = await fetch('/api/issues', { method: 'POST', body: data });
       if (res.ok) {
+        // Confetti!
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+
         const successMsg = document.createElement('div');
         successMsg.className =
           'fixed top-24 left-1/2 -translate-x-1/2 bg-yellow-500 text-black px-8 py-4 rounded-2xl shadow-[0_0_30px_rgba(234,179,8,0.5)] border border-yellow-400 z-[100] font-bold animate-bounce';
-        successMsg.innerText = '✓ Report Submitted Successfully!';
+        successMsg.innerText = 'You\'re a Civic Saviour! Report Submitted Successfully!';
         document.body.appendChild(successMsg);
 
         setFormData({
@@ -178,7 +207,7 @@ export const IssueReportForm: React.FC<{ onSuccess: () => void }> = ({ onSuccess
 
         <div className="space-y-4">
           <label className="text-xs font-bold text-yellow-500 uppercase tracking-widest ml-1 flex items-center gap-2">
-            <Camera className="w-4 h-4" /> Visual Evidence
+            <Camera className="w-4 h-4" /> Visual Evidence <span className="text-red-500">*</span>
           </label>
           <div className="relative group">
             <input

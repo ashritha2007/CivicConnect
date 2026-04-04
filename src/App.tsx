@@ -12,12 +12,18 @@ import {
   Lock,
   Mail,
   Eye,
-  EyeOff
+  EyeOff,
+  AlertTriangle,
+  Skull,
+  CheckCircle2
 } from 'lucide-react';
 import { IssueReportForm } from './components/IssueReportForm';
 import { IssueList } from './components/IssueList';
 import { IssueDetail } from './components/IssueDetail';
 import { AdminDashboard } from './components/AdminDashboard';
+import { NewsLayer } from './components/NewsLayer';
+import { ImpactDashboard } from './components/ImpactDashboard';
+import { RewardsVault } from './components/RewardsVault';
 
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -52,43 +58,47 @@ const NavItem = ({ icon: Icon, label, active, onClick, theme }: any) => {
 
 // ─── Landing Page (Green + Black) ─────────────────────────────────────────--
 const LandingPage = ({ setView }: { setView: (v: View) => void }) => (
+  <>
   <motion.div
     initial={{ opacity: 0 }}
     animate={{ opacity: 1 }}
-    className="min-h-[80vh] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden"
+    className="min-h-[90vh] flex flex-col items-center justify-center text-center px-6 relative overflow-hidden"
   >
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-green-500/10 blur-[120px] rounded-full -z-10" />
-    <div className="absolute top-20 left-20 w-64 h-64 bg-green-700/5 blur-[80px] rounded-full -z-10" />
+    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-green-500/10 blur-[150px] rounded-full -z-10" />
+    <div className="absolute top-20 left-20 w-80 h-80 bg-green-700/5 blur-[100px] rounded-full -z-10" />
+    <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-red-600/5 blur-[120px] rounded-full -z-10" />
 
     <motion.div
-      initial={{ y: 24, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      transition={{ delay: 0.2 }}
-      className="space-y-6 max-w-4xl"
+      initial={{ y: 30, opacity: 0 }}
+      whileInView={{ y: 0, opacity: 1 }}
+      viewport={{ once: true }}
+      transition={{ duration: 1, ease: [0.22, 1, 0.36, 1] }}
+      className="space-y-8 max-w-5xl"
     >
-      <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-xs font-bold uppercase tracking-widest mb-4">
-        <Megaphone className="w-4 h-4" /> Empowering Your Voice
+      <div className="inline-flex items-center gap-2 px-5 py-2 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-[10px] font-bold uppercase tracking-[0.3em] mb-4">
+        <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+        Join the Civic Revolution
       </div>
-      <h2 className="text-6xl md:text-8xl font-bold text-white tracking-tighter leading-none">
+      <h2 className="text-7xl md:text-9xl font-bold text-white tracking-tighter leading-[0.9]">
         Your Voice, <br />
-        <span style={{ color: '#4ade80', textShadow: '0 0 40px rgba(74,222,128,0.4)' }}>Our Action.</span>
+        <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-600" style={{ textShadow: '0 0 50px rgba(74,222,128,0.3)' }}>Our Action.</span>
       </h2>
-      <p className="text-xl md:text-2xl text-slate-400 font-medium max-w-2xl mx-auto leading-relaxed">
-        A silent problem is a persistent one. Speak up, report issues, and let's build a better community together.
+      <p className="text-xl md:text-3xl text-slate-400 font-medium max-w-3xl mx-auto leading-relaxed">
+        A silent problem is a persistent tragedy. Speak up, report critical issues, and help us save lives through collective action.
       </p>
 
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-10">
         <button
           onClick={() => setView('user-login')}
-          className="w-full sm:w-auto px-10 py-5 bg-green-500 text-black rounded-[2rem] font-bold text-lg hover:bg-green-400 transition-all shadow-[0_0_40px_rgba(34,197,94,0.25)] flex items-center justify-center gap-3 group"
+          className="w-full sm:w-auto px-12 py-6 bg-green-500 text-black rounded-full font-bold text-xl hover:bg-green-400 transition-all shadow-[0_0_50px_rgba(34,197,94,0.3)] flex items-center justify-center gap-3 group active:scale-95"
         >
-          Enter as Citizen <ArrowRight className="w-6 h-6 group-hover:translate-x-1 transition-transform" />
+          Enter as Citizen <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
         </button>
         <button
           onClick={() => setView('admin-login')}
-          className="w-full sm:w-auto px-10 py-5 bg-white/5 text-white border border-white/10 rounded-[2rem] font-bold text-lg hover:bg-white/10 transition-all flex items-center justify-center gap-3"
+          className="w-full sm:w-auto px-12 py-6 bg-white/5 text-white border border-white/10 rounded-full font-bold text-xl hover:bg-white/10 transition-all flex items-center justify-center gap-3 active:scale-95"
         >
-          <Shield className="w-6 h-6 text-red-400" /> Admin Portal
+          <Shield className="w-6 h-6 text-red-500" /> Admin Access
         </button>
       </div>
     </motion.div>
@@ -96,13 +106,70 @@ const LandingPage = ({ setView }: { setView: (v: View) => void }) => (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{ delay: 0.9 }}
-      className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2"
+      transition={{ delay: 1.5 }}
+      className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3"
     >
-      <p className="text-slate-600 text-[10px] font-bold uppercase tracking-[0.3em]">Scroll to explore</p>
-      <div className="w-px h-12 bg-gradient-to-b from-green-500/50 to-transparent" />
+      <p className="text-slate-600 text-[10px] font-bold uppercase tracking-[0.4em]">Scroll for Critical Alerts</p>
+      <motion.div 
+        animate={{ y: [0, 10, 0] }}
+        transition={{ repeat: Infinity, duration: 2 }}
+        className="w-px h-16 bg-gradient-to-b from-green-500/50 to-transparent" 
+      />
     </motion.div>
   </motion.div>
+
+  {/* Mission / Context Section */}
+  <div className="w-full bg-[#050505] py-32 px-6 border-y border-white/5 relative overflow-hidden">
+     <div className="max-w-4xl mx-auto text-center space-y-8">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="w-20 h-20 bg-red-600/10 border border-red-500/20 rounded-3xl mx-auto flex items-center justify-center mb-4"
+        >
+          <AlertTriangle className="w-10 h-10 text-red-500" />
+        </motion.div>
+        <motion.h3 
+          initial={{ opacity: 0, y: 20 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          viewport={{ once: true }}
+          className="text-4xl md:text-5xl font-bold text-white tracking-tight"
+        >
+          Why CivicConnect <span className="text-red-500">Matters</span>
+        </motion.h3>
+        <motion.p 
+          initial={{ opacity: 0, y: 20 }} 
+          whileInView={{ opacity: 1, y: 0 }} 
+          viewport={{ once: true }}
+          transition={{ delay: 0.1 }}
+          className="text-xl text-slate-400 leading-relaxed font-medium"
+        >
+          Every year, thousands of lives are impacted by structural neglect, pothole-related accidents, and healthcare crises that could have been avoided with faster reporting and bureaucratic transparency. Our platform is dedicated to bridging that gap.
+        </motion.p>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.8 }} 
+          whileInView={{ opacity: 1, scale: 1 }} 
+          viewport={{ once: true }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-10"
+        >
+           {[
+             { label: 'Fatalities Prevented', value: '12', icon: <Skull className="w-5 h-5" /> },
+             { label: 'Active Reports', value: '154', icon: <Megaphone className="w-5 h-5" /> },
+             { label: 'Resolved in Vizag', value: '42', icon: <CheckCircle2 className="w-5 h-5" /> }
+           ].map((stat, i) => (
+             <div key={i} className="p-8 rounded-[2rem] bg-white/[0.02] border border-white/5 flex flex-col items-center gap-2">
+                <div className="text-red-500 mb-2">{stat.icon}</div>
+                <div className="text-4xl font-black text-white">{stat.value}</div>
+                <div className="text-[10px] font-bold uppercase tracking-widest text-slate-500">{stat.label}</div>
+             </div>
+           ))}
+        </motion.div>
+     </div>
+  </div>
+  
+  <NewsLayer />
+  </>
 );
 
 // ─── Login Form ──────────────────────────────────────────────────────────────
@@ -497,6 +564,12 @@ export default function App() {
         {/* User Feed (yellow theme) */}
         {view === 'feed' && (
           <div className="space-y-12">
+            {user?.role === 'user' && (
+              <>
+                <ImpactDashboard user={user} />
+                <RewardsVault user={user} />
+              </>
+            )}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
               <div className="max-w-2xl">
                 <h2 className="text-5xl font-bold text-white tracking-tighter">
@@ -581,9 +654,9 @@ export default function App() {
             </div>
 
             {adminSubView === 'feed' ? (
-              <IssueList onSelect={(id) => setSelectedIssueId(id)} isAdmin={true} />
+              <IssueList onSelect={(id) => setSelectedIssueId(id)} isAdmin={true} userRole={user?.role} />
             ) : (
-              <AdminDashboard />
+              <AdminDashboard user={user} />
             )}
 
           </div>

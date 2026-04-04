@@ -7,14 +7,15 @@ import { Users, CheckCircle2, Clock, AlertTriangle, TrendingUp, Map as MapIcon, 
 import { HeatMap } from './MapComponents';
 import { motion } from 'motion/react';
 
-export const AdminDashboard: React.FC = () => {
+export const AdminDashboard: React.FC<{ user?: any }> = ({ user }) => {
   const [stats, setStats] = useState<any>(null);
   const [issues, setIssues] = useState<any[]>([]);
 
   useEffect(() => {
-    fetch('/api/analytics').then(res => res.json()).then(setStats);
-    fetch('/api/issues').then(res => res.json()).then(setIssues);
-  }, []);
+    const roleQuery = user?.role ? `?role=${user.role}` : '';
+    fetch(`/api/analytics${roleQuery}`).then(res => res.json()).then(setStats);
+    fetch(`/api/issues${roleQuery}`).then(res => res.json()).then(setIssues);
+  }, [user]);
 
   if (!stats) return <div className="flex items-center justify-center h-64 text-red-500 font-bold animate-pulse">Initializing Analytics...</div>;
 
@@ -67,6 +68,19 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="space-y-10">
+      <div className="flex items-center gap-4 mb-4 border-b border-white/10 pb-4">
+        <h2 className="text-3xl font-bold text-white tracking-tight">
+          {user?.role === 'superadmin' ? 'Global Supervision' : 
+            user?.role === 'vmrda_admin' ? 'VMRDA Regional Dashboard' : 
+            'GVMC Operations Dashboard'}
+        </h2>
+        {user?.role === 'superadmin' && (
+          <span className="px-3 py-1 bg-red-500/20 text-red-400 text-xs font-bold rounded-full border border-red-500/30">
+            Super Admin View
+          </span>
+        )}
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard title="Total Reports" value={stats.total} icon={TrendingUp} color="bg-red-500" delay={0.1} />
         <StatCard title="Resolved" value={stats.resolved} icon={CheckCircle2} color="bg-emerald-500" delay={0.2} />

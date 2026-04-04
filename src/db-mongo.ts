@@ -37,7 +37,15 @@ export const UserSchema = new Schema({
     password: { type: String, required: true },
     role: { type: String, default: 'user' },
     reputation: { type: Number, default: 0 },
+    points: { type: Number, default: 0 },
+    report_count: { type: Number, default: 0 },
 }, { timestamps: true });
+
+export const CertificateSchema = new Schema({
+    user_id: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    milestone: { type: Number, required: true },
+    issued_date: { type: Date, default: Date.now },
+});
 
 export const IssueSchema = new Schema({
     title: { type: String, required: true },
@@ -53,6 +61,9 @@ export const IssueSchema = new Schema({
     assigned_corporation: { type: String, default: null },
     votes: { type: Number, default: 0 },
     is_high_priority: { type: Number, default: 0 },
+    severity: { type: String, default: 'low' }, // low, medium, high, critical
+    confidence_score: { type: Number, default: 0 },
+    ai_category: { type: String, default: null },
 }, { timestamps: true });
 
 export const VoteSchema = new Schema({
@@ -81,3 +92,4 @@ export const Issue = mongoose.model('Issue', IssueSchema);
 export const Vote = mongoose.model('Vote', VoteSchema);
 export const Comment = mongoose.model('Comment', CommentSchema);
 export const Timeline = mongoose.model('Timeline', TimelineSchema);
+export const Certificate = mongoose.model('Certificate', CertificateSchema);

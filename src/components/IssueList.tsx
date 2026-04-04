@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ThumbsUp, MapPin, AlertCircle, ChevronRight, Search, Flame } from 'lucide-react';
+import { ThumbsUp, MapPin, AlertCircle, ChevronRight, Search, Flame, Skull } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -15,6 +15,7 @@ interface Issue {
   createdAt?: string;
   locality: string;
   is_high_priority: boolean;
+  severity: string;
 }
 
 interface IssueCardProps {
@@ -28,88 +29,104 @@ const VOTE_HIGHLIGHT_THRESHOLD = 10;
 
 const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, onSelect, onVote }) => {
   const isHighVoted = issue.votes >= VOTE_HIGHLIGHT_THRESHOLD;
+  const isCritical = issue.severity === 'critical';
+
   return (
     <motion.div
       layout
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
       onClick={() => onSelect(issue.id)}
-      className={`group relative rounded-[2rem] overflow-hidden transition-all hover:translate-y-[-4px] cursor-pointer ${isHighVoted || issue.is_high_priority
-        ? 'high-priority-glow'
-        : isAdmin
-          ? 'admin-glow-card'
-          : 'glass-card'
+      className={`group relative rounded-[2.5rem] overflow-hidden transition-all cursor-pointer ${isCritical
+        ? 'critical-glow'
+        : isHighVoted || issue.is_high_priority
+          ? 'high-priority-glow'
+          : isAdmin
+            ? 'admin-glow-card'
+            : 'glass-card'
         }`}
     >
-      {/* Top accent bar for high-voted issues */}
-      {(isHighVoted || issue.is_high_priority) && (
-        <div className={`w-full h-1 bg-gradient-to-r ${isAdmin ? 'from-red-800 via-red-500 to-red-800' : 'from-yellow-700 via-yellow-400 to-yellow-700'}`} />
+      {/* Top accent bar */}
+      {isCritical && (
+        <div className="w-full h-1.5 bg-gradient-to-r from-red-600 via-red-400 to-red-600 animate-pulse" />
       )}
 
       {issue.photo_url && (
-        <div className="h-56 overflow-hidden relative">
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
+        <div className="h-60 overflow-hidden relative">
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent z-10" />
           <img
             src={issue.photo_url}
             alt={issue.title}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            className={`w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ${isCritical ? 'grayscale-[0.3] group-hover:grayscale-0' : ''}`}
           />
-          <div className="absolute bottom-4 left-4 z-20">
+          <div className="absolute bottom-4 left-6 z-20 flex flex-wrap gap-2">
             <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest status-${issue.status}`}>
               {issue.status.replace('_', ' ')}
             </span>
+            {isCritical && (
+              <span className="px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5 shadow-lg shadow-red-500/40">
+                <Skull className="w-3 h-3" /> FATALITY RISK
+              </span>
+            )}
           </div>
         </div>
       )}
 
-      <div className="p-6 space-y-4">
-        <div className="flex justify-between items-start gap-2">
-          <h3 className={`font-bold text-xl line-clamp-1 transition-colors ${isHighVoted || issue.is_high_priority ? 'text-red-300 group-hover:text-red-200' : 'text-white group-hover:text-red-400'
+      <div className="p-8 space-y-4">
+        <div className="flex justify-between items-start gap-4">
+          <h3 className={`font-bold text-2xl line-clamp-2 leading-tight transition-colors ${isCritical ? 'text-white' : isHighVoted || issue.is_high_priority ? 'text-red-300 group-hover:text-red-200' : 'text-white group-hover:text-red-400'
             }`}>
             {issue.title}
           </h3>
-          <div className="flex items-center gap-1 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0 mt-1">
+            {isCritical && <Skull className="w-5 h-5 text-red-500 animate-bounce" />}
             {isHighVoted && (
-              <Flame className={`w-4 h-4 fill-current animate-pulse ${isAdmin ? 'text-red-400' : 'text-yellow-400'}`} />
-            )}
-            {issue.is_high_priority && (
-              <AlertCircle className={`w-4 h-4 animate-pulse ${isAdmin ? 'text-red-500' : 'text-yellow-500'}`} />
+              <Flame className={`w-5 h-5 fill-current animate-pulse ${isAdmin ? 'text-red-400' : 'text-yellow-400'}`} />
             )}
           </div>
         </div>
 
         {!issue.photo_url && (
-          <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest status-${issue.status}`}>
-            {issue.status.replace('_', ' ')}
-          </span>
+          <div className="flex gap-2">
+            <span className={`inline-block px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest status-${issue.status}`}>
+              {issue.status.replace('_', ' ')}
+            </span>
+            {isCritical && (
+              <span className="px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-bold uppercase tracking-widest">
+                CRITICAL
+              </span>
+            )}
+          </div>
         )}
 
-        <p className="text-slate-400 text-sm line-clamp-2 leading-relaxed">{issue.description}</p>
+        <p className="text-slate-400 text-base line-clamp-3 leading-relaxed">{issue.description}</p>
 
-        <div className="flex items-center gap-4 text-slate-500 text-xs font-medium">
-          <span className="flex items-center gap-1.5">
-            <MapPin className={`w-3.5 h-3.5 ${isAdmin ? 'text-red-500' : 'text-yellow-500'}`} /> {issue.locality}
+        <div className="flex items-center gap-4 text-slate-500 text-xs font-bold uppercase tracking-wider">
+          <span className="flex items-center gap-1.5 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+            <MapPin className={`w-4 h-4 ${isCritical || isAdmin ? 'text-red-500' : 'text-yellow-500'}`} /> {issue.locality}
           </span>
-          <span>{formatDistanceToNow(new Date(issue.createdAt || issue.created_at))} ago</span>
+          <span className="bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
+            {formatDistanceToNow(new Date(issue.createdAt || issue.created_at))} ago
+          </span>
         </div>
 
-        <div className="pt-5 flex items-center justify-between border-t border-white/5">
+        <div className="pt-6 flex items-center justify-between border-t border-white/5 mt-2">
           <button
             onClick={(e) => onVote(issue.id, e)}
             disabled={isAdmin}
-            className={`flex items-center gap-2.5 px-5 py-2.5 rounded-2xl transition-all text-sm font-bold ${isAdmin
+            className={`flex items-center gap-3 px-6 py-3 rounded-2xl transition-all text-sm font-bold ${isAdmin
               ? 'bg-white/5 text-slate-500 cursor-not-allowed'
               : `bg-white/5 hover:bg-yellow-500 hover:text-black ${isHighVoted ? 'text-yellow-400' : ''}`
               }`}
           >
             <ThumbsUp className={`w-4 h-4 ${issue.votes > 0 ? 'fill-current' : ''}`} />
-            <span>{issue.votes}</span>
-            {isHighVoted && <Flame className="w-3.5 h-3.5 text-red-400 fill-current" />}
+            <span>{issue.votes} Support</span>
           </button>
-          <div className="flex items-center gap-2 text-slate-500 group-hover:text-red-400 transition-colors">
-            <span className="text-xs font-bold uppercase tracking-widest leading-none">{isAdmin ? 'Manage' : 'Details'}</span>
-            <ChevronRight className={`w-4 h-4 ${isAdmin ? 'text-slate-500' : 'text-yellow-500'}`} />
+          <div className="flex items-center gap-2 text-slate-400 group-hover:text-white transition-colors">
+            <span className="text-xs font-bold uppercase tracking-widest">{isAdmin ? 'Action Required' : 'View Impact'}</span>
+            <ChevronRight className={`w-4 h-4 ${isCritical ? 'text-red-500' : isAdmin ? 'text-red-400' : 'text-yellow-500'}`} />
           </div>
         </div>
       </div>
@@ -117,13 +134,15 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, onSelect, onVote 
   );
 };
 
-export const IssueList: React.FC<{ onSelect: (id: number) => void; isAdmin?: boolean }> = ({ onSelect, isAdmin = false }) => {
+export const IssueList: React.FC<{ onSelect: (id: number) => void; isAdmin?: boolean, userRole?: string }> = ({ onSelect, isAdmin = false, userRole }) => {
   const [issues, setIssues] = useState<Issue[]>([]);
   const [filter, setFilter] = useState({ state: '', district: '', category: '', status: '' });
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchIssues = async () => {
-    const params = new URLSearchParams(filter);
+    const paramsObj: any = { ...filter };
+    if (userRole) paramsObj.role = userRole;
+    const params = new URLSearchParams(paramsObj);
     const res = await fetch(`/api/issues?${params}`);
     const data = await res.json();
     // Sort: high priority + most voted first

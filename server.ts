@@ -72,69 +72,64 @@ async function startServer() {
     if (issueCount === 0) {
       const issues = [
         {
-          title: "Potholes on MVP Colony Main Road",
-          description: "Several large potholes have formed near the Sector 4 junction. It's becoming dangerous for two-wheelers, especially at night.",
-          category: "Roads",
+          title: "CRITICAL: Flyover Structural Cracks noticed near MVP Colony",
+          description: "Major hairline cracks extending through the main support pillar. Immediate inspection required to prevent structural failure. Citizens have reported pieces of concrete falling on vehicles below.",
+          category: "Infrastructure",
           state: "Andhra Pradesh",
           district: "Visakhapatnam",
           locality: "MVP Colony",
           latitude: 17.7447,
           longitude: 83.3311,
-          status: "in_progress",
-          votes: 15,
-          is_high_priority: 1
+          status: "not_started",
+          votes: 154,
+          is_high_priority: 1,
+          severity: 'critical',
+          photo_url: 'https://images.unsplash.com/photo-1584483756854-13ce3766736c?auto=format&fit=crop&q=80&w=800'
         },
         {
-          title: "Garbage Accumulation at RK Beach",
-          description: "Massive pile of plastic waste and food containers near the INS Kursura Museum area. Needs immediate cleanup.",
-          category: "Sanitation",
+          title: "Emergency: Toxic Chemical Leak in Gajuwaka Drainage Channel",
+          description: "Pungent smell and discoloration of water observed. Local residents reporting breathing difficulties. Possible industrial runoff mixing with municipal sewage line.",
+          category: "Public Safety",
           state: "Andhra Pradesh",
           district: "Visakhapatnam",
-          locality: "Beach Road",
-          latitude: 17.7185,
-          longitude: 83.3314,
-          status: "not_started",
-          votes: 24,
-          is_high_priority: 1
+          locality: "Gajuwaka",
+          latitude: 17.6905,
+          longitude: 83.2095,
+          status: "in_progress",
+          votes: 89,
+          is_high_priority: 1,
+          severity: 'critical',
+          photo_url: 'https://images.unsplash.com/photo-1628102422619-b05c320d9a6c?auto=format&fit=crop&q=80&w=800'
         },
         {
-          title: "Street Light Failure in Siripuram",
-          description: "The entire stretch from Siripuram Circle to Dutt Island is in pitch darkness for the last 3 days. Safety concern for pedestrians.",
-          category: "Electricity",
+          title: "Death Trap: Unmarked Excavation on Siripuram Junction Road",
+          description: "A 10-foot deep pit left open without barricades or lights. Three accidents reported in 48 hours. Fatal risk for two-wheelers at night.",
+          category: "Roads",
           state: "Andhra Pradesh",
           district: "Visakhapatnam",
           locality: "Siripuram",
           latitude: 17.7224,
           longitude: 83.3151,
           status: "not_started",
-          votes: 8,
-          is_high_priority: 0
+          votes: 67,
+          is_high_priority: 1,
+          severity: 'high',
+          photo_url: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?auto=format&fit=crop&q=80&w=800'
         },
         {
-          title: "Water Pipeline Leakage in Gajuwaka",
-          description: "Major water leakage observed near the Old Gajuwaka junction. Thousands of gallons of water being wasted daily.",
-          category: "Water Supply",
+          title: "Massive Garbage Accumulation near Port Hospital",
+          description: "Biological waste and stagnant water causing a severe dengue outbreak in the vicinity. Immediate sanitization needed.",
+          category: "Sanitation",
           state: "Andhra Pradesh",
           district: "Visakhapatnam",
-          locality: "Gajuwaka",
-          latitude: 17.6905,
-          longitude: 83.2095,
-          status: "resolved",
-          votes: 12,
-          is_high_priority: 1
-        },
-        {
-          title: "Stray Dog Menace near Madhurawada",
-          description: "Increasing number of stray dogs near the IT Hill area. Several cases of chasing commuters reported recently.",
-          category: "Public Safety",
-          state: "Andhra Pradesh",
-          district: "Visakhapatnam",
-          locality: "Madhurawada",
-          latitude: 17.8178,
-          longitude: 83.3417,
-          status: "not_started",
-          votes: 19,
-          is_high_priority: 1
+          locality: "Beach Road",
+          latitude: 17.7185,
+          longitude: 83.3314,
+          status: "in_progress",
+          votes: 45,
+          is_high_priority: 0,
+          severity: 'high',
+          photo_url: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?auto=format&fit=crop&q=80&w=800'
         }
       ];
 
@@ -260,9 +255,24 @@ async function startServer() {
   };
 
   const adminMiddleware = (req: any, res: any, next: any) => {
-    if (req.user?.role !== 'admin') {
+    if (!['admin', 'superadmin', 'gvmc_admin', 'vmrda_admin'].includes(req.user?.role)) {
       return res.status(403).json({ error: 'Forbidden: Admin access required' });
     }
+    next();
+  };
+
+  const rbacIssueAccess = async (req: any, res: any, next: any) => {
+    const issueId = req.params.id;
+    const current = await Issue.findById(issueId);
+    if (!current) return res.status(404).json({ error: 'Issue not found' });
+    
+    if (req.user.role === 'gvmc_admin' && current.assigned_corporation !== 'GVMC' && current.assigned_corporation !== null) {
+      return res.status(403).json({ error: 'Forbidden: Cannot access VMRDA data' });
+    }
+    if (req.user.role === 'vmrda_admin' && current.assigned_corporation !== 'VMRDA' && current.assigned_corporation !== null) {
+      return res.status(403).json({ error: 'Forbidden: Cannot access GVMC data' });
+    }
+    req.issueDoc = current;
     next();
   };
 
@@ -277,8 +287,15 @@ async function startServer() {
     if (status) query.status = status;
 
     const issues = await Issue.find(query).sort({ createdAt: -1 });
+    
+    // RBAC filtering for frontend feeds if queried by admin
+    const roleQuery = req.query.role;
+    let filteredIssues = issues;
+    if (roleQuery === 'gvmc_admin') filteredIssues = issues.filter(i => i.assigned_corporation === 'GVMC' || i.assigned_corporation === null);
+    if (roleQuery === 'vmrda_admin') filteredIssues = issues.filter(i => i.assigned_corporation === 'VMRDA' || i.assigned_corporation === null);
+
     // Map _id to id and add created_at/updated_at aliases for frontend compatibility
-    const formattedIssues = issues.map(issue => {
+    const formattedIssues = filteredIssues.map(issue => {
       const obj: any = issue.toObject();
       obj.id = obj._id;
       obj.created_at = obj.createdAt;
@@ -289,13 +306,34 @@ async function startServer() {
   });
 
   app.post("/api/issues", upload.single("photo"), async (req, res) => {
-    const { title, description, category, state, district, locality, latitude, longitude } = req.body;
+    const { title, description, category, state, district, locality, latitude, longitude, confidence_score, ai_category } = req.body;
     const photo_url = req.file ? `/uploads/${req.file.filename}` : null;
 
     try {
+      // Decode Token if exists to reward user
+      const authHeader = req.headers.authorization;
+      let userId = null;
+      if (authHeader && authHeader.startsWith('Bearer ')) {
+        const token = authHeader.split(' ')[1];
+        try {
+          const decoded: any = jwt.verify(token, JWT_SECRET);
+          userId = decoded.id;
+        } catch(e) {}
+      }
+
       const newIssue = await Issue.create({
-        title, description, category, state, district, locality, latitude, longitude, photo_url, assigned_corporation: null
+        title, description, category, state, district, locality, latitude, longitude, photo_url, 
+        assigned_corporation: null, confidence_score, ai_category
       });
+
+      if (userId) {
+        const user = await User.findById(userId);
+        if (user) {
+          user.report_count = (user.report_count || 0) + 1;
+          user.points = (user.points || 0) + 10;
+          await user.save();
+        }
+      }
 
       // Add initial timeline entry
       await Timeline.create({ issue_id: newIssue._id, status: 'not_started', note: 'Issue reported by citizen.' });
@@ -325,12 +363,12 @@ async function startServer() {
     }
   });
 
-  app.patch("/api/issues/:id/status", authMiddleware, adminMiddleware, async (req: any, res: any) => {
+  app.patch("/api/issues/:id/status", authMiddleware, adminMiddleware, rbacIssueAccess, async (req: any, res: any) => {
     try {
       const { status, note } = req.body;
       const issueId = req.params.id;
 
-      const current = await Issue.findById(issueId);
+      const current = req.issueDoc;
       if (current && current.status !== status) {
         current.status = status;
         await current.save();
@@ -344,12 +382,12 @@ async function startServer() {
     }
   });
 
-  app.patch("/api/issues/:id/assign", authMiddleware, adminMiddleware, async (req: any, res: any) => {
+  app.patch("/api/issues/:id/assign", authMiddleware, adminMiddleware, rbacIssueAccess, async (req: any, res: any) => {
     try {
       const { corporation } = req.body;
       const issueId = req.params.id;
 
-      const current = await Issue.findById(issueId);
+      const current = req.issueDoc;
 
       if (current && current.assigned_corporation !== corporation) {
         current.assigned_corporation = corporation;
@@ -401,25 +439,32 @@ async function startServer() {
     res.json({ success: true });
   });
 
-  // --- Analytics ---
   app.get("/api/analytics", async (req, res) => {
     try {
-      const total = await Issue.countDocuments();
-      const resolved = await Issue.countDocuments({ status: 'resolved' });
-      const pending = await Issue.countDocuments({ status: { $ne: 'resolved' } });
-      const highPriority = await Issue.countDocuments({ is_high_priority: 1 });
+      const roleQuery = req.query.role as string;
+      const matchQuery: any = {};
+      if (roleQuery === 'gvmc_admin') matchQuery.assigned_corporation = { $in: ['GVMC', null] };
+      if (roleQuery === 'vmrda_admin') matchQuery.assigned_corporation = { $in: ['VMRDA', null] };
+
+      const total = await Issue.countDocuments(matchQuery);
+      const resolved = await Issue.countDocuments({ ...matchQuery, status: 'resolved' });
+      const pending = await Issue.countDocuments({ ...matchQuery, status: { $ne: 'resolved' } });
+      const highPriority = await Issue.countDocuments({ ...matchQuery, is_high_priority: 1 });
 
       const byCategory = await Issue.aggregate([
+        { $match: matchQuery },
         { $group: { _id: "$category", count: { $sum: 1 } } },
         { $project: { _id: 0, category: "$_id", count: 1 } }
       ]);
 
       const byStatus = await Issue.aggregate([
+        { $match: matchQuery },
         { $group: { _id: "$status", count: { $sum: 1 } } },
         { $project: { _id: 0, status: "$_id", count: 1 } }
       ]);
 
       const byCorporation = await Issue.aggregate([
+        // Corporation stats might still be global for superadmin or specific to them
         { $match: { assigned_corporation: { $ne: null } } },
         { $group: { _id: "$assigned_corporation", count: { $sum: 1 } } },
         { $project: { _id: 0, name: "$_id", count: 1 } }

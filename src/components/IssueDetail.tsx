@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Clock, MessageSquare, Send, CheckCircle2, AlertCircle, Loader2, MapPin, Calendar } from 'lucide-react';
 import { format } from 'date-fns';
 import { motion } from 'motion/react';
-import { Building2, Landmark, ShieldCheck } from 'lucide-react';
+import { Building2, Landmark, ShieldCheck, Skull, Flame, AlertTriangle } from 'lucide-react';
 
 
 export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdmin?: boolean }> = ({ issueId, onClose, isAdmin }) => {
@@ -21,9 +21,13 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!comment.trim()) return;
+    const token = localStorage.getItem('token');
     await fetch(`/api/issues/${issueId}/comments`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       body: JSON.stringify({ text: comment, role: isAdmin ? 'admin' : 'user' }),
     });
     setComment('');
@@ -33,9 +37,13 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
   const updateStatus = async (status: string) => {
     setUpdating(true);
     const note = prompt('Add a progress note (optional):');
+    const token = localStorage.getItem('token');
     await fetch(`/api/issues/${issueId}/status`, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      },
       body: JSON.stringify({ status, note }),
     });
     fetchData();
@@ -48,9 +56,13 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
   const handleAssignCorporation = async (corp: string) => {
     setUpdating(true);
     try {
+      const token = localStorage.getItem('token');
       await fetch(`/api/issues/${issueId}/assign`, {
         method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
         body: JSON.stringify({ corporation: corp }),
       });
       await fetchData();
@@ -62,11 +74,14 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
 
   // Theme-aware accent colors
   const accent = isAdmin ? 'red' : 'yellow';
-  const accentText = isAdmin ? 'text-red-400' : 'text-yellow-400';
-  const accentText2 = isAdmin ? 'text-red-500' : 'text-yellow-500';
-  const topBar = isAdmin
-    ? 'bg-gradient-to-r from-red-700 via-red-500 to-red-700'
-    : 'bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600';
+  const isCritical = issue.severity === 'critical';
+  const accentText = isCritical ? 'text-red-500' : isAdmin ? 'text-red-400' : 'text-yellow-400';
+  const accentText2 = isCritical ? 'text-red-600' : isAdmin ? 'text-red-500' : 'text-yellow-500';
+  const topBar = isCritical 
+    ? 'bg-gradient-to-r from-red-800 via-red-500 to-red-800'
+    : isAdmin
+      ? 'bg-gradient-to-r from-red-700 via-red-500 to-red-700'
+      : 'bg-gradient-to-r from-yellow-600 via-yellow-400 to-yellow-600';
   const sendBtn = isAdmin
     ? 'bg-red-600 text-white hover:bg-red-500 shadow-red-500/10'
     : 'bg-yellow-500 text-black hover:bg-yellow-400 shadow-yellow-500/10';
@@ -77,49 +92,55 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/80 backdrop-blur-xl"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 md:p-8 bg-black/90 backdrop-blur-2xl"
     >
       <motion.div
-        initial={{ scale: 0.9, y: 20 }}
-        animate={{ scale: 1, y: 0 }}
-        exit={{ scale: 0.9, y: 20 }}
-        className="bg-[#0c0c0c] w-full max-w-5xl max-h-[90vh] rounded-[3rem] overflow-hidden shadow-2xl border border-white/10 flex flex-col relative"
+        initial={{ scale: 0.95, y: 30, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.95, y: 30, opacity: 0 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+        className={`bg-[#080808] w-full max-w-6xl max-h-[92vh] rounded-[3.5rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] border flex flex-col relative ${
+          isCritical ? 'border-red-600/30' : 'border-white/10'
+        }`}
       >
         {/* Accent top bar */}
-        <div className={`absolute top-0 left-0 w-full h-0.5 ${topBar}`} />
+        <div className={`absolute top-0 left-0 w-full h-1.5 ${topBar} ${isCritical ? 'animate-pulse' : ''}`} />
 
         {/* Header */}
-        <div className="p-8 border-b border-white/5 flex justify-between items-center bg-black/50 backdrop-blur-md sticky top-0 z-10">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest status-${issue.status}`}>
-                {issue.status.replace('_', ' ')}
+        <div className="p-10 border-b border-white/5 flex justify-between items-center bg-black/40 backdrop-blur-md sticky top-0 z-10">
+          <div className="max-w-[80%]">
+            <div className="flex items-center gap-3 mb-3">
+              <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest ${
+                isCritical ? 'bg-red-600 text-white shadow-lg shadow-red-500/30' : `status-${issue.status}`
+              }`}>
+                {isCritical ? 'CRITICAL ALERT' : issue.status.replace('_', ' ')}
               </span>
-              {issue.is_high_priority && (
-                <span className={`${isAdmin ? 'text-red-500' : 'text-yellow-500'} text-[10px] font-bold uppercase tracking-widest animate-pulse flex items-center gap-1.5`}>
-                  <AlertCircle className="w-3.5 h-3.5" /> {isAdmin ? 'High Priority' : 'Community Alert'}
+              {(issue.is_high_priority || isCritical) && (
+                <span className={`${isCritical ? 'text-red-500 animate-bounce' : isAdmin ? 'text-red-500' : 'text-yellow-500'} text-[10px] font-bold uppercase tracking-widest flex items-center gap-2`}>
+                  {isCritical ? <Skull className="w-4 h-4" /> : <AlertCircle className="w-4 h-4" />}
+                  {isCritical ? 'EXTREME FATALITY RISK' : isAdmin ? 'High Priority Case' : 'Urgent Community Support'}
                 </span>
               )}
-
             </div>
-            <h2 className="text-3xl font-bold text-white tracking-tight">{issue.title}</h2>
-            <div className="flex flex-wrap items-center gap-4 mt-3 text-slate-500 text-xs font-medium">
-              <span className="flex items-center gap-1.5">
+            <h2 className={`text-4xl font-bold tracking-tighter ${isCritical ? 'text-white' : 'text-white'}`}>
+              {issue.title}
+            </h2>
+            <div className="flex flex-wrap items-center gap-6 mt-4 text-slate-500 text-xs font-bold uppercase tracking-wider">
+              <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
                 <MapPin className={`w-4 h-4 ${accentText2}`} /> {issue.locality}, {issue.district}
               </span>
-              <span className="flex items-center gap-1.5">
+              <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/5">
                 <Calendar className={`w-4 h-4 ${accentText2}`} /> {format(new Date(issue.createdAt || issue.created_at), 'PPP')}
               </span>
               {issue.assigned_corporation && (
-                <span className="flex items-center gap-1.5 bg-white/5 px-2 py-0.5 rounded-lg border border-white/5">
+                <span className="flex items-center gap-2 bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 text-slate-300">
                   <Building2 className={`w-4 h-4 ${accentText2}`} /> {issue.assigned_corporation}
                 </span>
               )}
-
             </div>
           </div>
-          <button onClick={onClose} className="p-4 bg-white/5 hover:bg-white/10 rounded-2xl transition-all border border-white/5 group">
-            <X className="w-6 h-6 text-slate-400 group-hover:text-white transition-colors" />
+          <button onClick={onClose} className="p-5 bg-white/5 hover:bg-red-500/10 rounded-[2rem] transition-all border border-white/5 group active:scale-95">
+            <X className="w-7 h-7 text-slate-400 group-hover:text-red-500 transition-colors" />
           </button>
         </div>
 
@@ -137,6 +158,22 @@ export const IssueDetail: React.FC<{ issueId: number; onClose: () => void; isAdm
                 <h4 className={`text-xs font-bold uppercase tracking-widest ${accentText2}`}>Problem Description</h4>
                 <p className="text-slate-300 text-lg leading-relaxed">{issue.description}</p>
               </div>
+
+              {!isAdmin && issue.status === 'resolved' && (
+                <div className="p-8 mt-6 bg-gradient-to-r flex items-center gap-6 from-emerald-500/10 via-teal-500/5 to-transparent border border-emerald-500/20 rounded-[2rem]">
+                  <div className="w-16 h-16 shrink-0 bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400">
+                    <CheckCircle2 className="w-8 h-8" />
+                  </div>
+                  <div>
+                    <h4 className="text-emerald-400 font-bold mb-2">Issue Resolved</h4>
+                    <p className="text-emerald-500/80 text-sm leading-relaxed">
+                      Thank you for reporting! You have successfully contributed to 
+                      <strong className="text-emerald-400"> 1.2% </strong>
+                      of the infrastructure improvements in <strong className="text-emerald-300">{issue.locality}</strong> this year.
+                    </p>
+                  </div>
+                </div>
+              )}
 
               {isAdmin && (
                 <div className="p-8 rounded-[2.5rem] bg-white/5 border border-white/10 space-y-6">
