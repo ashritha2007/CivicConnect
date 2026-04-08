@@ -325,11 +325,11 @@ const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue:
   // For demonstration, standard admins see their assigned corp.
   
   const corporations = [
-    { id: 'all', name: 'Global System Overview', icon: LayoutDashboard },
-    { id: 'GVMC', name: 'GVMC Operations', icon: Building2 },
-    { id: 'VMRDA', name: 'VMRDA Regional', icon: Building2 },
-    { id: 'EPDCL', name: 'EPDCL (Electrical)', icon: Zap },
-    { id: 'POLICE', name: 'City Police', icon: ShieldAlert }
+    { id: 'all',    name: 'Global Overview',   shortName: 'All Corps',  icon: LayoutDashboard },
+    { id: 'GVMC',  name: 'Greater Visakhapatnam Municipal Corporation', shortName: 'GVMC',  icon: Building2 },
+    { id: 'VMRDA', name: 'Visakhapatnam Metropolitan Region Development Authority', shortName: 'VMRDA', icon: Building2 },
+    { id: 'EDPCL', name: 'Eastern Power Distribution Company Ltd.',      shortName: 'EDPCL', icon: Zap },
+    { id: 'POLICE',name: 'City Police',         shortName: 'POLICE', icon: ShieldAlert }
   ];
 
   return (
@@ -360,14 +360,14 @@ const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue:
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
               { label: 'Total Issues', value: globalStats.total, icon: AlertTriangle, color: 'text-amber-300' },
-              { label: 'Resolved', value: globalStats.resolved, icon: CheckCircle2, color: 'text-emerald-200' },
-              { label: 'In Progress', value: globalStats.pending, icon: Clock, color: 'text-blue-200' },
-              { label: 'High Priority', value: globalStats.highPriority, icon: Shield, color: 'text-red-300' }
+              { label: 'Not Started',  value: globalStats.notStarted ?? (globalStats.total - globalStats.resolved - (globalStats.inProgress ?? globalStats.pending)), icon: Clock, color: 'text-slate-300' },
+              { label: 'In Progress',  value: globalStats.inProgress ?? globalStats.pending, icon: Shield, color: 'text-blue-200' },
+              { label: 'Resolved',     value: globalStats.resolved, icon: CheckCircle2, color: 'text-emerald-200' },
             ].map((stat, i) => (
               <div key={i} className="bg-white/10 border border-white/20 rounded-2xl p-4 flex items-center gap-4 backdrop-blur-sm">
                  <div className={`p-3 rounded-xl bg-white/10 ${stat.color}`}><stat.icon className="w-5 h-5" /></div>
                  <div>
-                   <p className="text-2xl font-bold text-white">{stat.value}</p>
+                   <p className="text-2xl font-bold text-white">{stat.value ?? 0}</p>
                    <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">{stat.label}</p>
                  </div>
               </div>
@@ -382,20 +382,25 @@ const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue:
       {activeTab === 'dashboard' && (
         <div className="flex flex-col lg:flex-row gap-6">
           {/* Sidebar */}
-          <div className="lg:w-64 shrink-0 flex flex-col gap-2 bg-emerald-700 rounded-[2.5rem] p-4 h-fit shadow-lg">
-            <h3 className="text-xs font-bold uppercase tracking-widest text-emerald-200 px-4 pt-2 pb-4">Dashboards</h3>
+          <div className="lg:w-68 shrink-0 flex flex-col gap-1.5 bg-slate-900 rounded-[2.5rem] p-4 h-fit shadow-xl">
+            <h3 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 px-4 pt-2 pb-3">Dashboards</h3>
             {corporations.map(corp => (
-               <button 
-                 key={corp.id} 
+               <button
+                 key={corp.id}
                  onClick={() => setActiveCorp(corp.id)}
                  className={`flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all ${
                    activeCorp === corp.id
-                     ? 'bg-white text-emerald-700 shadow-md'
-                     : 'text-emerald-100 hover:bg-white/10'
+                     ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/20'
+                     : 'text-slate-300 hover:bg-white/5 hover:text-white'
                  }`}
                >
                  <corp.icon className="w-4 h-4 shrink-0" />
-                 <span className="text-sm font-bold truncate">{corp.name}</span>
+                 <div className="min-w-0">
+                   <p className="text-xs font-bold truncate">{corp.shortName}</p>
+                   {activeCorp !== corp.id && (
+                     <p className="text-[10px] text-slate-500 truncate hidden lg:block">{corp.name.substring(0, 28)}{corp.name.length > 28 ? '…' : ''}</p>
+                   )}
+                 </div>
                </button>
             ))}
           </div>

@@ -10,6 +10,36 @@ import fs from "fs";
 
 const JWT_SECRET = process.env.JWT_SECRET || "civic-connect-secret-key";
 
+// ─── Canonical Category-to-Corporation Mapping ────────────────────────────────
+// This is the single source of truth used for filtering and assignment.
+const CORP_CATEGORY_MAP: Record<string, string[]> = {
+  GVMC:   ['Sanitation', 'Water Supply', 'Garbage'],
+  VMRDA:  ['Roads', 'Infrastructure', 'Pothole'],
+  EDPCL:  ['Electricity', 'Electrical'],
+  POLICE: ['Public Safety'],
+};
+
+// Helper: resolve corporation for a given category
+const assignCorporation = (categoryName: string): string => {
+  for (const [corp, cats] of Object.entries(CORP_CATEGORY_MAP)) {
+    if (cats.includes(categoryName)) return corp;
+  }
+  return 'GVMC'; // fallback
+};
+
+// Helper: build a Mongo $or query that matches a corporation strictly
+// Issues belong to a corp if their assigned_corporation matches OR their category is
+// in that corp's responsibility list (dual-filter for data integrity).
+const buildCorpFilter = (corp: string): any => {
+  const cats = CORP_CATEGORY_MAP[corp] || [];
+  return {
+    $or: [
+      { assigned_corporation: corp },
+      { category: { $in: cats } },
+    ],
+  };
+};
+
 // Ensure uploads directory exists
 const uploadDir = path.join(process.cwd(), "uploads");
 if (!fs.existsSync(uploadDir)) {
@@ -133,17 +163,7 @@ async function startServer() {
         }
       ];
 
-      const assignCorporation = (category: string) => {
-        const map: Record<string, string> = {
-          'Roads': 'GVMC',
-          'Sanitation': 'GVMC',
-          'Water Supply': 'GVMC',
-          'Electricity': 'EPDCL',
-          'Public Safety': 'POLICE',
-          'Infrastructure': 'VMRDA',
-        };
-        return map[category] || 'GVMC';
-      };
+      // Use canonical mapping helper defined at top of file
 
       for (const issueData of issues) {
         const newIssue = await Issue.create({
@@ -278,11 +298,21 @@ async function startServer() {
     const current = await Issue.findById(issueId);
     if (!current) return res.status(404).json({ error: 'Issue not found' });
     
-    if (req.user.role === 'gvmc_admin' && current.assigned_corporation !== 'GVMC' && current.assigned_corporation !== null) {
-      return res.status(403).json({ error: 'Forbidden: Cannot access VMRDA data' });
-    }
-    if (req.user.role === 'vmrda_admin' && current.assigned_corporation !== 'VMRDA' && current.assigned_corporation !== null) {
-      return res.status(403).json({ error: 'Forbidden: Cannot access GVMC data' });
+    const corpRoleMap: Record<string, string> = {
+      gvmc_admin: 'GVMC',
+      vmrda_admin: 'VMRDA',
+      edpcl_admin: 'EDPCL',
+      police_admin: 'POLICE',
+    };
+    const allowedCorp = corpRoleMap[req.user.role];
+    if (allowedCorp) {
+      const cats = CORP_CATEGORY_MAP[allowedCorp] || [];
+      const belongsToCorp =
+        current.assigned_corporation === allowedCorp ||
+        cats.includes(current.category);
+      if (!belongsToCorp) {
+        return res.status(403).json({ error: `Forbidden: This issue does not belong to ${allowedCorp}` });
+      }
     }
     req.issueDoc = current;
     next();
@@ -298,22 +328,31 @@ async function startServer() {
     if (category) query.category = category;
     if (status) query.status = status;
 
-    const issues = await Issue.find(query).sort({ createdAt: -1 });
-    
-    // RBAC filtering for frontend feeds if queried by admin
-    const roleQuery = req.query.role;
-    let filteredIssues = issues;
-    if (roleQuery === 'gvmc_admin') filteredIssues = issues.filter(i => i.assigned_corporation === 'GVMC' || i.assigned_corporation === null);
-    if (roleQuery === 'vmrda_admin') filteredIssues = issues.filter(i => i.assigned_corporation === 'VMRDA' || i.assigned_corporation === null);
-
-    // Strict filtering by corporation if requested by Dashboards
-    const corporationQuery = req.query.corporation;
-    if (corporationQuery) {
-      filteredIssues = filteredIssues.filter(i => i.assigned_corporation === corporationQuery);
+    // ── Corporation-specific dual-filter (strict RBAC) ──────────────────
+    // Match issues where assigned_corporation === corp OR category is in
+    // that corp's responsibility list. This prevents cross-corp data leakage.
+    const corporationQuery = req.query.corporation as string;
+    if (corporationQuery && corporationQuery !== 'all') {
+      const corpFilter = buildCorpFilter(corporationQuery);
+      // Merge with any existing query conditions
+      Object.assign(query, corpFilter);
     }
 
+    // ── Role-based soft filter for legacy role query ────────────────────
+    const roleQuery = req.query.role as string;
+    const corpRoleMap: Record<string, string> = {
+      gvmc_admin: 'GVMC', vmrda_admin: 'VMRDA',
+      edpcl_admin: 'EDPCL', police_admin: 'POLICE',
+    };
+    if (roleQuery && corpRoleMap[roleQuery] && !corporationQuery) {
+      const roleCorpFilter = buildCorpFilter(corpRoleMap[roleQuery]);
+      Object.assign(query, roleCorpFilter);
+    }
+
+    const issues = await Issue.find(query).sort({ createdAt: -1 });
+
     // Map _id to id and add created_at/updated_at aliases for frontend compatibility
-    const formattedIssues = filteredIssues.map(issue => {
+    const formattedIssues = issues.map(issue => {
       const obj: any = issue.toObject();
       obj.id = obj._id;
       obj.created_at = obj.createdAt;
@@ -339,17 +378,7 @@ async function startServer() {
         } catch(e) {}
       }
 
-      const assignCorporation = (categoryName: string) => {
-        const map: Record<string, string> = {
-          'Roads': 'GVMC',
-          'Sanitation': 'GVMC',
-          'Water Supply': 'GVMC',
-          'Electricity': 'EPDCL',
-          'Public Safety': 'POLICE',
-          'Infrastructure': 'VMRDA',
-        };
-        return map[categoryName] || 'GVMC';
-      };
+      // Use canonical mapping helper defined at top of file
 
       const newIssue = await Issue.create({
         title, description, category, state, district, locality, latitude, longitude, photo_url, 
@@ -471,20 +500,28 @@ async function startServer() {
 
   app.get("/api/analytics", async (req, res) => {
     try {
-      const roleQuery = req.query.role as string;
       const corporationQuery = req.query.corporation as string;
-      const matchQuery: any = {};
-      if (roleQuery === 'gvmc_admin') matchQuery.assigned_corporation = { $in: ['GVMC', null] };
-      if (roleQuery === 'vmrda_admin') matchQuery.assigned_corporation = { $in: ['VMRDA', null] };
-      
-      // Strict filtering by exact corporation if requested
-      if (corporationQuery) {
-        matchQuery.assigned_corporation = corporationQuery;
+      const roleQuery = req.query.role as string;
+      let matchQuery: any = {};
+
+      // ── Corporation-specific dual-filter ───────────────────────────────
+      const corpRoleMap: Record<string, string> = {
+        gvmc_admin: 'GVMC', vmrda_admin: 'VMRDA',
+        edpcl_admin: 'EDPCL', police_admin: 'POLICE',
+      };
+
+      if (corporationQuery && corporationQuery !== 'all') {
+        matchQuery = buildCorpFilter(corporationQuery);
+      } else if (roleQuery && corpRoleMap[roleQuery]) {
+        matchQuery = buildCorpFilter(corpRoleMap[roleQuery]);
       }
+      // If neither, matchQuery stays {} → returns all (global hero summary)
 
       const total = await Issue.countDocuments(matchQuery);
       const resolved = await Issue.countDocuments({ ...matchQuery, status: 'resolved' });
-      const pending = await Issue.countDocuments({ ...matchQuery, status: { $ne: 'resolved' } });
+      const notStarted = await Issue.countDocuments({ ...matchQuery, status: 'not_started' });
+      const inProgress = await Issue.countDocuments({ ...matchQuery, status: 'in_progress' });
+      const pending = await Issue.countDocuments({ ...matchQuery, status: { $nin: ['resolved'] } });
       const highPriority = await Issue.countDocuments({ ...matchQuery, is_high_priority: 1 });
 
       const byCategory = await Issue.aggregate([
@@ -499,14 +536,14 @@ async function startServer() {
         { $project: { _id: 0, status: "$_id", count: 1 } }
       ]);
 
+      // Always global — shows all corporation volumes for the overview chart
       const byCorporation = await Issue.aggregate([
-        // Corporation stats might still be global for superadmin or specific to them
         { $match: { assigned_corporation: { $ne: null } } },
         { $group: { _id: "$assigned_corporation", count: { $sum: 1 } } },
         { $project: { _id: 0, name: "$_id", count: 1 } }
       ]);
 
-      res.json({ total, resolved, pending, highPriority, byCategory, byStatus, byCorporation });
+      res.json({ total, resolved, notStarted, inProgress, pending, highPriority, byCategory, byStatus, byCorporation });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -538,6 +575,25 @@ async function startServer() {
         check();
       });
       await waitForConnection();
+
+      // ── One-time migration: rename EPDCL → EDPCL ───────────────────────
+      const oldName = await Issue.countDocuments({ assigned_corporation: 'EPDCL' });
+      if (oldName > 0) {
+        await Issue.updateMany({ assigned_corporation: 'EPDCL' }, { $set: { assigned_corporation: 'EDPCL' } });
+        console.log(`✅ Migrated ${oldName} EPDCL issues → EDPCL`);
+      }
+
+      // ── One-time migration: fix Roads/Infrastructure → VMRDA ──────────
+      // Previously Roads was mapped to GVMC incorrectly
+      const wrongRoads = await Issue.countDocuments({ category: { $in: ['Roads', 'Pothole', 'Infrastructure'] }, assigned_corporation: 'GVMC' });
+      if (wrongRoads > 0) {
+        await Issue.updateMany(
+          { category: { $in: ['Roads', 'Pothole', 'Infrastructure'] }, assigned_corporation: 'GVMC' },
+          { $set: { assigned_corporation: 'VMRDA' } }
+        );
+        console.log(`✅ Migrated ${wrongRoads} Roads/Infrastructure issues from GVMC → VMRDA`);
+      }
+
       await seedUsers();
       await seedIssues();
       console.log("✅ Database seeding complete.");
