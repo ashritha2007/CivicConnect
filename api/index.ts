@@ -14,6 +14,25 @@ if (!MONGODB_URI) {
     console.error("❌ MONGODB_URI environment variable is not set. Please add it in Vercel Project Settings → Environment Variables.");
 }
 
+// ─── Canonical Category-to-Corporation Mapping ────────────────────────────────
+const CORP_CATEGORY_MAP: Record<string, string[]> = {
+  GVMC:   ['Sanitation', 'Water Supply', 'Garbage'],
+  VMRDA:  ['Roads', 'Infrastructure', 'Pothole'],
+  EDPCL:  ['Electricity', 'Electrical'],
+  POLICE: ['Public Safety'],
+};
+
+const buildCorpFilter = (corp: string): any => {
+  const cats = CORP_CATEGORY_MAP[corp] || [];
+  return {
+    $or: [
+      { assigned_corporation: corp },
+      { category: { $in: cats } },
+    ],
+  };
+};
+
+
 // ─── DB MODELS (Inlined for Vercel Stability) ──────────────────────────────
 const UserSchema = new Schema({
     email: { type: String, required: true, unique: true },
@@ -153,6 +172,12 @@ router.get("/issues", async (req, res) => {
     if (district) query.district = district;
     if (category) query.category = category;
     if (status) query.status = status;
+
+    const corporationQuery = req.query.corporation as string;
+    if (corporationQuery && corporationQuery !== 'all') {
+      Object.assign(query, buildCorpFilter(corporationQuery));
+    }
+
     const issues = await Issue.find(query).sort({ createdAt: -1 });
     res.json(issues.map(i => ({ ...i.toObject(), id: i._id, created_at: (i as any).createdAt })));
 });
@@ -223,17 +248,28 @@ router.post("/issues/:id/comments", async (req, res) => {
 router.get("/analytics", async (req, res) => {
     try {
         await connectDB();
-        const total = await Issue.countDocuments();
-        const resolved = await Issue.countDocuments({ status: 'resolved' });
-        const pending = await Issue.countDocuments({ status: { $ne: 'resolved' } });
-        const highPriority = await Issue.countDocuments({ is_high_priority: 1 });
+        const corporationQuery = req.query.corporation as string;
+        let matchQuery: any = {};
+
+        if (corporationQuery && corporationQuery !== 'all') {
+          matchQuery = buildCorpFilter(corporationQuery);
+        }
+
+        const total = await Issue.countDocuments(matchQuery);
+        const resolved = await Issue.countDocuments({ ...matchQuery, status: 'resolved' });
+        const notStarted = await Issue.countDocuments({ ...matchQuery, status: 'not_started' });
+        const inProgress = await Issue.countDocuments({ ...matchQuery, status: 'in_progress' });
+        const pending = await Issue.countDocuments({ ...matchQuery, status: { $nin: ['resolved'] } });
+        const highPriority = await Issue.countDocuments({ ...matchQuery, is_high_priority: 1 });
 
         const byCategory = await Issue.aggregate([
+            { $match: matchQuery },
             { $group: { _id: "$category", count: { $sum: 1 } } },
             { $project: { _id: 0, category: "$_id", count: 1 } }
         ]);
 
         const byStatus = await Issue.aggregate([
+            { $match: matchQuery },
             { $group: { _id: "$status", count: { $sum: 1 } } },
             { $project: { _id: 0, status: "$_id", count: 1 } }
         ]);
@@ -244,7 +280,7 @@ router.get("/analytics", async (req, res) => {
             { $project: { _id: 0, name: "$_id", count: 1 } }
         ]);
 
-        res.json({ total, resolved, pending, highPriority, byCategory, byStatus, byCorporation });
+        res.json({ total, resolved, notStarted, inProgress, pending, highPriority, byCategory, byStatus, byCorporation });
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
