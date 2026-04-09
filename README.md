@@ -4,7 +4,8 @@ The platform focuses on simplicity and accessibility, providing an intuitive int
 
 
 
-<img width="1919" height="890" alt="image" src="https://github.com/user-attachments/assets/41f48a3b-0e93-41a2-aafd-50822242a76d" />
+<img width="1912" height="897" alt="image" src="https://github.com/user-attachments/assets/5aba20ac-f411-4d8f-a048-b0a93943d5c6" />
+
 
 
 *Key Points:*
@@ -46,3 +47,5 @@ Focused on solving real-world local problems efficiently
 Scalable solution that can be expanded to different regions
 
 ⭐ Winner of Ideathon at Indian Institutes of Management during IIM Open Campus Day for the "Idea to Impact Sprint" competition 🚀
+
+link: https://civiconnect-brown.vercel.app/
