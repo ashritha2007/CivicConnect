@@ -311,14 +311,15 @@ const LoginForm = ({
 
 // ─── Admin Portal Wrapper ──────────────────────────────────────────────────
 const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue: (id: number) => void }) => {
-  const [globalStats, setGlobalStats] = useState<any>(null);
+  const [corpStats, setCorpStats] = useState<any>(null);
   const [activeTab, setActiveTab] = useState<'feed' | 'dashboard'>('dashboard');
   const [activeCorp, setActiveCorp] = useState<string>('all'); // 'all', 'GVMC', 'VMRDA'
 
   useEffect(() => {
-    // Fetch global stats for Hero (ignoring role filtering to get total system state)
-    fetch('/api/analytics').then(res => res.json()).then(setGlobalStats);
-  }, []);
+    // Fetch stats for the active corporation (or global if 'all')
+    const corpParam = activeCorp !== 'all' ? `?corporation=${activeCorp}` : '';
+    fetch(`/api/analytics${corpParam}`).then(res => res.json()).then(setCorpStats);
+  }, [activeCorp]);
 
   const isAdmin = user?.role === 'superadmin';
   // If not superadmin, restrict sidebar options somewhat or just let them view what they're allowed
@@ -340,14 +341,21 @@ const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue:
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-emerald-900/20 blur-[80px] rounded-full -ml-32 -mb-32 pointer-events-none" />
         
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
-           <div>
-             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-[10px] font-bold uppercase tracking-widest mb-4">
-               <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
-               Central Monitoring System — Live
-             </div>
-             <h2 className="text-4xl font-bold text-white tracking-tighter">System <span className="text-emerald-200">Overview</span></h2>
-             <p className="text-emerald-100 mt-2 text-sm max-w-lg">Real-time aggregation of all reported issues across all interconnected municipal corporations.</p>
-           </div>
+            <div>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-white text-[10px] font-bold uppercase tracking-widest mb-4">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                {activeCorp === 'all' ? 'Central Monitoring System — Live' : `${activeCorp} Regional Command — Live`}
+              </div>
+              <h2 className="text-4xl font-bold text-white tracking-tighter">
+                {activeCorp === 'all' ? 'System ' : `${activeCorp} `}
+                <span className="text-emerald-200">Overview</span>
+              </h2>
+              <p className="text-emerald-100 mt-2 text-sm max-w-lg">
+                {activeCorp === 'all' 
+                  ? 'Real-time aggregation of all reported issues across all interconnected municipal corporations.'
+                  : `Real-time management and resolution tracking for all issues assigned to ${activeCorp}.`}
+              </p>
+            </div>
            
            <div className="flex bg-white/10 p-1.5 rounded-2xl border border-white/20">
               <button onClick={() => setActiveTab('dashboard')} className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === 'dashboard' ? 'bg-white text-emerald-700 shadow-lg' : 'text-white/70 hover:text-white'}`}>Dashboards</button>
@@ -356,13 +364,13 @@ const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue:
         </div>
 
         {/* Global Metrics Row */}
-        {globalStats ? (
+        {corpStats ? (
           <div className="relative z-10 grid grid-cols-2 md:grid-cols-4 gap-4">
             {[
-              { label: 'Total Issues', value: globalStats.total, icon: AlertTriangle, color: 'text-amber-300' },
-              { label: 'Not Started',  value: globalStats.notStarted ?? (globalStats.total - globalStats.resolved - (globalStats.inProgress ?? globalStats.pending)), icon: Clock, color: 'text-slate-300' },
-              { label: 'In Progress',  value: globalStats.inProgress ?? globalStats.pending, icon: Shield, color: 'text-blue-200' },
-              { label: 'Resolved',     value: globalStats.resolved, icon: CheckCircle2, color: 'text-emerald-200' },
+              { label: 'Assigned Issues', value: corpStats.total, icon: AlertTriangle, color: 'text-amber-300' },
+              { label: 'Not Started',  value: corpStats.notStarted ?? (corpStats.total - corpStats.resolved - (corpStats.inProgress ?? corpStats.pending)), icon: Clock, color: 'text-slate-300' },
+              { label: 'In Progress',  value: corpStats.inProgress ?? corpStats.pending, icon: Shield, color: 'text-blue-200' },
+              { label: 'Resolved',     value: corpStats.resolved, icon: CheckCircle2, color: 'text-emerald-200' },
             ].map((stat, i) => (
               <div key={i} className="bg-white/10 border border-white/20 rounded-2xl p-4 flex items-center gap-4 backdrop-blur-sm">
                  <div className={`p-3 rounded-xl bg-white/10 ${stat.color}`}><stat.icon className="w-5 h-5" /></div>
@@ -374,7 +382,7 @@ const AdminPortalWrapper = ({ user, onSelectIssue }: { user: any, onSelectIssue:
             ))}
           </div>
         ) : (
-          <div className="h-20 flex flex-col justify-center text-white/60 font-medium text-sm animate-pulse">Aggregating global telemetry...</div>
+          <div className="h-20 flex flex-col justify-center text-white/60 font-medium text-sm animate-pulse">Synchronizing telemetry...</div>
         )}
       </div>
 

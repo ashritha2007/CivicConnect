@@ -180,7 +180,7 @@ export const AdminDashboard: React.FC<{ user?: any; corporation?: string }> = ({
               <div className="flex items-center gap-2 mb-2">
                 <config.icon className="w-5 h-5 text-white/80" />
                 <span className="text-white/70 text-xs font-bold uppercase tracking-widest">
-                  {corporation === 'all' ? 'Super Admin — All Corporations' : 'Corporation Dashboard'}
+                  {corporation === 'all' ? 'Super Admin — Global System Overview' : `${config.shortName} Operations Command`}
                 </span>
               </div>
               <h2 className="text-2xl font-bold text-white tracking-tight leading-tight">
