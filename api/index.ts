@@ -83,38 +83,90 @@ const Comment = mongoose.models.Comment || mongoose.model('Comment', CommentSche
 const Timeline = mongoose.models.Timeline || mongoose.model('Timeline', TimelineSchema);
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────
-let isConnected = false;
 const connectDB = async () => {
     if (isConnected) return;
     if (!MONGODB_URI) {
         throw new Error(
-            'MONGODB_URI is not configured. Go to your Vercel project → Settings → Environment Variables and add MONGODB_URI with your MongoDB Atlas connection string.'
+            'MONGODB_URI is not configured.'
         );
     }
     await mongoose.connect(MONGODB_URI);
     isConnected = true;
 };
 
+// Helper: resolve corporation for a given category
+const assignCorporation = (categoryName: string): string => {
+  for (const [corp, cats] of Object.entries(CORP_CATEGORY_MAP)) {
+    if (cats.includes(categoryName)) return corp;
+  }
+  return 'GVMC'; // fallback
+};
+
 const seedUsers = async (forceReset = false) => {
+    // Admin 1
     const adminEmail = "admin@civicconnect.com";
-    const existingAdmin = await User.findOne({ email: adminEmail });
+    const hashedPasswordAdmin1 = await bcrypt.hash("admin123", 10);
+    await User.findOneAndUpdate(
+      { email: adminEmail },
+      { $set: { password: hashedPasswordAdmin1, role: 'admin' } },
+      { upsert: true, new: true }
+    );
 
-    if (!existingAdmin || forceReset) {
-        const hashedPassword = await bcrypt.hash("admin123", 10);
-        if (existingAdmin) {
-            existingAdmin.password = hashedPassword;
-            existingAdmin.role = 'admin';
-            await existingAdmin.save();
-        } else {
-            await User.create({ email: adminEmail, password: hashedPassword, role: 'admin' });
-        }
-    }
+    // Admin 2
+    const adminEmail2 = "harshithsai597@gmail.com";
+    const hashedPasswordAdmin2 = await bcrypt.hash("22052007", 10);
+    await User.findOneAndUpdate(
+      { email: adminEmail2 },
+      { $set: { password: hashedPasswordAdmin2, role: 'admin' } },
+      { upsert: true, new: true }
+    );
 
+    // Demo Citizen
     const userEmail = "citizen@civicconnect.com";
     const existingUser = await User.findOne({ email: userEmail });
     if (!existingUser) {
-        const hashedPassword = await bcrypt.hash("user123", 10);
-        await User.create({ email: userEmail, password: hashedPassword, role: 'user' });
+      const hashedPassword = await bcrypt.hash("user123", 10);
+      await User.create({ email: userEmail, password: hashedPassword, role: 'user' });
+    }
+};
+
+const seedIssues = async () => {
+    const issueCount = await Issue.countDocuments();
+    if (issueCount === 0) {
+      const issues = [
+        {
+          title: "CRITICAL: Flyover Structural Cracks noticed near MVP Colony",
+          description: "Major hairline cracks extending through the main support pillar. Immediate inspection required to prevent structural failure.",
+          category: "Infrastructure", state: "Andhra Pradesh", district: "Visakhapatnam", locality: "MVP Colony",
+          latitude: 17.7447, longitude: 83.3311, status: "not_started", votes: 154, is_high_priority: 1
+        },
+        {
+          title: "Emergency: Toxic Chemical Leak in Gajuwaka Drainage Channel",
+          description: "Pungent smell and discoloration of water observed. Local residents reporting breathing difficulties.",
+          category: "Public Safety", state: "Andhra Pradesh", district: "Visakhapatnam", locality: "Gajuwaka",
+          latitude: 17.6905, longitude: 83.2095, status: "in_progress", votes: 89, is_high_priority: 1
+        },
+        {
+          title: "Death Trap: Unmarked Excavation on Siripuram Junction Road",
+          description: "A 10-foot deep pit left open without barricades or lights. Three accidents reported in 48 hours.",
+          category: "Roads", state: "Andhra Pradesh", district: "Visakhapatnam", locality: "Siripuram",
+          latitude: 17.7224, longitude: 83.3151, status: "not_started", votes: 67, is_high_priority: 1
+        },
+        {
+          title: "Massive Garbage Accumulation near Port Hospital",
+          description: "Biological waste and stagnant water causing severe hygiene issues.",
+          category: "Sanitation", state: "Andhra Pradesh", district: "Visakhapatnam", locality: "Beach Road",
+          latitude: 17.7185, longitude: 83.3314, status: "in_progress", votes: 45, is_high_priority: 0
+        }
+      ];
+
+      for (const issueData of issues) {
+        const newIssue = await Issue.create({
+          ...issueData,
+          assigned_corporation: assignCorporation(issueData.category)
+        });
+        await Timeline.create({ issue_id: newIssue._id, status: 'not_started', note: 'Issue reported by citizen.' });
+      }
     }
 };
 
@@ -153,7 +205,15 @@ router.post("/auth/login", async (req, res) => {
     try {
         await connectDB();
         await seedUsers();
-        const email = req.body.email.toLowerCase().trim();
+        await seedIssues();
+
+        // One-time migrations
+        const oldName = await Issue.countDocuments({ assigned_corporation: 'EPDCL' });
+        if (oldName > 0) {
+            await Issue.updateMany({ assigned_corporation: 'EPDCL' }, { $set: { assigned_corporation: 'EDPCL' } });
+        }
+
+        const email = (req.body.email || "").toLowerCase().trim();
         const user = await User.findOne({ email });
         if (!user || !(await bcrypt.compare(req.body.password, user.password))) {
             return res.status(401).json({ error: "Invalid credentials" });
@@ -285,25 +345,6 @@ router.get("/analytics", async (req, res) => {
     } catch (error: any) {
         res.status(500).json({ error: error.message });
     }
-});
-
-// EXTRA DEFENSIVE MOUNTING
-app.get("/api/admin/emergency-reset", async (req, res) => {
-    try { await connectDB(); await seedUsers(true); res.json({ success: true, message: "Admin reset to 'admin123'" }); }
-    catch (e: any) { res.status(500).json({ error: e.message }); }
-});
-
-app.post("/api/auth/login", async (req, res) => {
-    try {
-        await connectDB(); await seedUsers();
-        const email = req.body.email.toLowerCase().trim();
-        const user = await User.findOne({ email });
-        if (!user || !(await bcrypt.compare(req.body.password, user.password))) {
-            return res.status(401).json({ error: "Invalid credentials" });
-        }
-        const token = jwt.sign({ id: user._id, role: user.role }, JWT_SECRET);
-        res.json({ token, user: { id: user._id, email: user.email, role: user.role } });
-    } catch (error: any) { res.status(500).json({ error: error.message }); }
 });
 
 app.use("/api", router);
