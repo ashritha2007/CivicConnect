@@ -1,9 +1,8 @@
-import * as express from "express";
-import * as mongoose from "mongoose";
-import { Schema } from "mongoose";
-import * as jwt from "jsonwebtoken";
-import * as bcrypt from "bcryptjs";
-import * as multer from "multer";
+import express from "express";
+import mongoose, { Schema } from "mongoose";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
+import multer from "multer";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -83,6 +82,7 @@ const Comment = mongoose.models.Comment || mongoose.model('Comment', CommentSche
 const Timeline = mongoose.models.Timeline || mongoose.model('Timeline', TimelineSchema);
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────
+let isConnected = false;
 const connectDB = async () => {
     if (isConnected) return;
     if (!MONGODB_URI) {
